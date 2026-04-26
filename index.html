@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Grocery Run">
 <title>Grocery Run</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23f3ecd9'/><ellipse cx='32' cy='42' rx='18' ry='17' fill='%23b7472a'/><path d='M32 25 C32 20 36 16 41 16 C41 22 37 25 32 25 Z' fill='%235d8a3b'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -266,83 +268,111 @@
   //  Order matters: first match wins.
   // ───────────────────────────────────────────────────────────────
   const CATEGORIES = [
-  
-	['Pantry', '🥫', [
+
+    ['Pantry', '🥫', [
       'rice', 'chal', 'polao chal', 'flour', 'atta', 'maida', 'suji', 'semolina', 'sugar',
       'salt', 'oil', 'vinegar', 'soy sauce', 'ketchup', 'semai', 'lachcha',
       'mustard', 'jam', 'honey', 'peanut butter', 'pasta', 'noodle',
-      'noodles', 'spaghetti', 'macaroni', 'lentil', 'lentils', 'dal', 'daal',
+      'spaghetti', 'macaroni', 'lentil', 'dal', 'daal',
       'chickpea', 'chola', 'tea', 'coffee', 'cocoa', 'chana daal',
       'baking', 'yeast', 'cornstarch', 'corn starch', 'soup', 'broth',
       'sauce', 'tomato paste', 'canned', 'tinned', 'pickle', 'achar', 'cereal',
-      'oats', 'oatmeal', 'granola', 'tin', 'can', 'custard', 'seeds', 'besan'
+      'oat', 'oatmeal', 'granola', 'tin', 'can', 'custard', 'seed', 'besan'
     ]],
-	['Dairy & Eggs', '🥛', [
+    ['Dairy & Eggs', '🥛', [
       'milk', 'cheese', 'butter', 'yogurt', 'tok doi',
-      'cream', 'ghee', 'paneer', 'chana', 'egg', 'eggs'
+      'cream', 'ghee', 'paneer', 'chana', 'egg'
     ]],
-	['Meat & Fish', '🐟', [
+    ['Meat & Fish', '🐟', [
       'chicken', 'beef', 'mutton', 'khasi', 'lamb',
       'fish', 'mach', 'shrimp', 'prawn',
       'salmon', 'tuna', 'ilish', 'hilsa', 'rui', 'katla', 'tilapia', 'pomfret',
-      'rupchanda', 'pangash', 'pangas', 'koi', 'magur', 'shing', 'goat','duck'
+      'rupchanda', 'pangash', 'pangas', 'koi', 'magur', 'shing', 'goat', 'duck'
     ]],
-	['Snacks', '🍪', [
-      'biscuit', 'biscuits', 'cookies', 'cracker', 'chips',
-      'chocolate', 'candy', 'sweet', 'sweets', 'mishti', 'chanachur',
-      'jhalmuri', 'popcorn', 'nuts', 'almond', 'cashew', 
+    ['Snacks', '🍪', [
+      'biscuit', 'cookie', 'cracker', 'chip',
+      'chocolate', 'candy', 'sweet', 'mishti', 'chanachur',
+      'jhalmuri', 'popcorn', 'nut', 'almond', 'cashew',
       'peanut', 'pistachio', 'walnut', 'raisin', 'naru'
     ]],
-	['Household and Toiletries', '🧴', [
+    ['Household and Toiletries', '🧴', [
       'soap', 'shampoo', 'toothpaste', 'toothbrush', 'detergent', 'body wash',
-      'surf', 'tissue', 'tissues', 'paper towel', 'toilet paper', 'cleaner',
+      'surf', 'tissue', 'paper towel', 'toilet paper', 'cleaner',
       'bleach', 'sponge', 'foil', 'plastic bag', 'trash bag',
-      'garbage bag', 'battery', 'batteries', 'bulb', 'matches', 'candle',
+      'garbage bag', 'battery', 'bulb', 'match', 'candle',
       'razor', 'deodorant', 'lotion', 'comb', 'brush', 'mosquito',
-      'odomos', 'harpic', 'vim', 'vim bar' ,'liquid soap', 'lizol',
+      'odomos', 'harpic', 'vim', 'vim bar', 'liquid soap', 'lizol'
     ]],
-	['Spices', '🧂', [
-      'spice', 'spices', 'masala', 'turmeric',
+    ['Spices', '🧂', [
+      'spice', 'masala', 'turmeric',
       'cumin', 'jeera', 'coriander', 'dhonia', 'cardamom',
-      'elach', 'cinnamon', 'daruchini', 'clove', 'lobongo', 'paprika', 'masala',
+      'elach', 'cinnamon', 'daruchini', 'clove', 'lobongo', 'paprika',
       'bay leaf', 'tej pata', 'saffron', 'jafran', 'panch foron', 'oregano', 'chilli powder',
-	  'herbs'
+      'herb'
     ]],
     ['Bakery', '🥖', [
       'bread', 'loaf', 'bun', 'roll', 'bagel', 'croissant', 'cake', 'pastry',
       'muffin', 'donut', 'tortilla', 'naan', 'paratha',
-      'ruti', 'toast',
+      'ruti', 'toast'
     ]],
     ['Fruit', '🍎', [
-      'apple', 'apples', 'banana', 'bananas', 'orange', 'oranges','grape', 'grapes', 'strawberry', 'strawberries',
-      'blueberry', 'blueberries', 'raspberry', 'mango', 'mangoes', 'pineapple', 'pineapples',
-      'watermelon', 'melon', 'papaya', 'kiwi', 'peach', 'peaches', 'pear', 'pears',
-      'plum', 'plums', 'cherry', 'cherries', 'avocado', 'avocadoes',
-      'pomegranate', 'guava', 'peyara', 'lichi', 'lychee', 'jackfruit', 'date', 'dates', 'fig', 'apricot', 'apricots', 'tangerine', 'mosambi',
-	  'gooseberry', 'mandarin',  'mandarins', 
+      'apple', 'banana', 'orange', 'grape', 'strawberry',
+      'blueberry', 'raspberry', 'mango', 'pineapple',
+      'watermelon', 'melon', 'papaya', 'kiwi', 'peach', 'pear',
+      'plum', 'cherry', 'avocado',
+      'pomegranate', 'guava', 'peyara', 'lichi', 'lychee', 'jackfruit',
+      'date', 'fig', 'apricot', 'tangerine', 'mosambi',
+      'gooseberry', 'mandarin'
     ]],
     ['Vegetable', '🥕', [
-      'tomato', 'tomatoes', 'tomatoe', 'potato', 'potatoes', 'onion',
-	  'garlic', 'roshun', 'ginger', 'carrot', 'cabbage',
+      'tomato', 'potato', 'onion',
+      'garlic', 'roshun', 'ginger', 'carrot', 'cabbage',
       'cauliflower', 'broccoli', 'spinach', 'lettuce',
-      'cucumber', 'pepper', 'capsicum', 'eggplant', 'brinjal', 
+      'cucumber', 'pepper', 'capsicum', 'eggplant', 'brinjal',
       'chili', 'chilli', 'lady finger', 'okra', 'pumpkin',
-      'gourd', 'lau', 'kakrol', 'patal', 'shim', 'beans',
-      'peas', 'corn', 'mushroom', 'celery', 'radish', 'beet', 'beetroot',
+      'gourd', 'lau', 'kakrol', 'patal', 'shim', 'bean',
+      'pea', 'corn', 'mushroom', 'celery', 'radish', 'beet', 'beetroot',
       'kale', 'asparagus', 'zucchini', 'shak', 'puishak', 'data', 'kachu',
       'sweet potato', 'mishti aloo', 'cilantro', 'lemon', 'lime'
     ]],
     ['Frozen', '❄', [
-      'ice cream', 'frozen', 'kulfi', 'discone', 'frozen fish', 'frozen paratha', 'frozen ruti'
+      'ice cream', 'frozen', 'kulfi', 'frozen fish', 'frozen paratha', 'frozen ruti'
     ]],
     ['Drinks', '🥤', [
       'water', 'juice', 'coke', 'pepsi', 'sprite', 'fanta',
       '7up', 'mountain dew', 'tang', 'mojo', 'frutika',
       'glucose', 'rooh afza'
     ]]
-    
+
   ];
   const OTHER_ICON = '📦';
+
+  // Escape regex metacharacters in a literal string
+  function reEscape(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  // Given a singular keyword, return a regex fragment that matches both
+  // the singular and its English plural form.
+  // Rules:
+  //   ends in consonant+y  -> "berry"  → "berr(?:y|ies)"
+  //   ends in s/x/z/ch/sh  -> "box"    → "box(?:es)?"
+  //   ends in o            -> "tomato" → "tomato(?:es|s)?"
+  //   anything else        -> "apple"  → "apples?"
+  function pluralPattern(word) {
+    const w = reEscape(word);
+    if (/[^aeiou]y$/i.test(word)) {
+      // strip the trailing y, then allow "y" or "ies"
+      return w.slice(0, -1) + '(?:y|ies)';
+    }
+    if (/(s|x|z|ch|sh)$/i.test(word)) {
+      return w + '(?:es)?';
+    }
+    if (/o$/i.test(word)) {
+      return w + '(?:es|s)?';
+    }
+    return w + 's?';
+  }
 
   function categorize(name) {
     const text = (name || '').toLowerCase();
@@ -350,10 +380,16 @@
     for (const [cat, , keywords] of CATEGORIES) {
       for (const kw of keywords) {
         if (kw.includes(' ')) {
-          if (text.includes(kw)) return cat;
+          // Multi-word: pluralize the LAST word only
+          // ("ice cream" → "ice creams?", "lady finger" → "lady fingers?")
+          const parts = kw.split(' ');
+          const last = parts.pop();
+          const head = parts.map(reEscape).join('\\s+');
+          const pattern = (head ? head + '\\s+' : '') + pluralPattern(last);
+          const re = new RegExp('(^|[^a-z])' + pattern + '([^a-z]|$)', 'i');
+          if (re.test(text)) return cat;
         } else {
-          // word-boundary match for single words
-          const re = new RegExp('(^|[^a-z])' + kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z]|$)', 'i');
+          const re = new RegExp('(^|[^a-z])' + pluralPattern(kw) + '([^a-z]|$)', 'i');
           if (re.test(text)) return cat;
         }
       }
@@ -412,18 +448,40 @@
   //  Actions
   // ───────────────────────────────────────────────────────────────
 
-  // If an item with the same name (case-insensitive) already exists,
+  // Strip English plural suffixes to get a canonical singular form.
+  // Mirrors the same rules used in pluralPattern():
+  //   cherries → cherry   (ies → y, when preceded by a consonant)
+  //   tomatoes → tomato   (oes → o)
+  //   boxes    → box      (ses/xes/zes/ches/shes → base)
+  //   apples   → apple    (trailing s, but not ss)
+  // Words that are already singular pass through unchanged.
+  function singularize(word) {
+    const w = word.trim().toLowerCase();
+    // consonant + ies → y  (cherries → cherry, berries → berry)
+    if (/[^aeiou]ies$/.test(w)) return w.slice(0, -3) + 'y';
+    // oes → o  (tomatoes → tomato, potatoes → potato)
+    if (/[^aeiou]oes$/.test(w)) return w.slice(0, -2);
+    // sibilant + es → base  (boxes → box, dishes → dish, buzzes → buzz)
+    if (/(s|x|z|ch|sh)es$/.test(w)) return w.slice(0, -2);
+    // plain s, but not ss, and word must be at least 4 chars (guards "bus", "gas")
+    if (w.length >= 4 && /[^s]s$/.test(w)) return w.slice(0, -1);
+    return w;
+  }
+
+  // If an item with the same singular root already exists,
   // bump its quantity and un-check it. Otherwise add as a new entry.
-  // Returns true if a new entry was created, false if it merged.
+  // The stored name is always the singular form so the list stays tidy.
   function addOrMerge(name, qty) {
-    const target = name.toLowerCase().trim();
-    const existing = items.find(i => i.name.toLowerCase().trim() === target);
+    const root = singularize(name);
+    const existing = items.find(i => singularize(i.name) === root);
     if (existing) {
       existing.qty = (existing.qty || 1) + (qty || 1);
-      existing.done = false;          // you need more, so it's not "done"
+      existing.done = false;
       return false;
     }
-    items.push({ id: Date.now() + Math.random(), name, qty, done: false });
+    // Capitalize the first letter nicely, store as singular
+    const stored = root.charAt(0).toUpperCase() + root.slice(1);
+    items.push({ id: Date.now() + Math.random(), name: stored, qty, done: false });
     return true;
   }
 
@@ -562,6 +620,15 @@
   });
 
   load();
+
+  // ───── PWA: register service worker ─────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch((err) => {
+        console.warn('SW registration failed:', err);
+      });
+    });
+  }
 </script>
 </body>
 </html>
