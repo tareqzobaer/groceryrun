@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Groceries">
-<title>Grocery List</title>
+<title>Grocery Run</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23f3ecd9'/><ellipse cx='32' cy='42' rx='18' ry='17' fill='%23b7472a'/><path d='M32 25 C32 20 36 16 41 16 C41 22 37 25 32 25 Z' fill='%235d8a3b'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,8 +28,7 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   html, body {
-    margin: 0;
-    padding: 0;
+    margin: 0; padding: 0;
     background: var(--paper);
     color: var(--ink);
     font-family: var(--font);
@@ -40,211 +39,135 @@
   }
 
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
+    content: ''; position: fixed; inset: 0;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.46 0 0 0 0 0.32 0 0 0 0.08 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-    opacity: 0.55;
-    pointer-events: none;
-    z-index: 1;
-    mix-blend-mode: multiply;
+    opacity: 0.55; pointer-events: none; z-index: 1; mix-blend-mode: multiply;
   }
-
   body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
+    content: ''; position: fixed; inset: 0;
     background:
       radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.5) 0%, transparent 50%),
       radial-gradient(ellipse at 50% 100%, rgba(120,90,40,0.08) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
+    pointer-events: none; z-index: 0;
   }
 
   .container {
-    position: relative;
-    z-index: 2;
-    max-width: 540px;
-    margin: 0 auto;
+    position: relative; z-index: 2;
+    max-width: 540px; margin: 0 auto;
     padding: 28px 20px 80px;
   }
 
   header {
-    text-align: center;
-    margin-bottom: 26px;
-    padding-bottom: 18px;
-    position: relative;
+    text-align: center; margin-bottom: 26px;
+    padding-bottom: 18px; position: relative;
   }
   header::after {
-    content: '';
-    position: absolute;
-    left: 8%;
-    right: 8%;
-    bottom: 0;
-    height: 1px;
-    background: var(--rule);
+    content: ''; position: absolute;
+    left: 8%; right: 8%; bottom: 0;
+    height: 1px; background: var(--rule);
     box-shadow: 0 4px 0 -3px var(--rule-soft);
   }
-
-  h1 {
-    font-family: var(--font);
-    font-weight: 700;
-    font-size: 32px;
-    line-height: 1;
-    margin: 0;
-    color: var(--ink);
-    letter-spacing: -0.5px;
-  }
-  .date {
-    font-family: var(--font);
-    font-weight: 400;
-    font-size: 13px;
-    color: var(--ink-soft);
-    margin-top: 8px;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-  }
+  h1 { font-weight: 700; font-size: 32px; line-height: 1; margin: 0; letter-spacing: -0.5px; }
+  .date { font-weight: 400; font-size: 13px; color: var(--ink-soft); margin-top: 8px; letter-spacing: 0.6px; text-transform: uppercase; }
 
   .paste-section {
-    background: rgba(255, 252, 240, 0.55);
+    background: rgba(255,252,240,0.55);
     border: 1px dashed var(--rule);
-    border-radius: 10px;
-    padding: 16px;
+    border-radius: 10px; padding: 16px;
     margin-bottom: 24px;
     transition: padding 0.25s ease;
   }
   .paste-section.collapsed { padding: 12px 16px; }
-
   .paste-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    user-select: none;
-    font-family: var(--font);
-    font-size: 13px;
-    font-weight: 500;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; user-select: none;
+    font-size: 13px; font-weight: 500;
     color: var(--ink-soft);
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
+    letter-spacing: 0.6px; text-transform: uppercase;
   }
   .arrow { transition: transform 0.25s ease; font-size: 14px; }
   .paste-section.collapsed .arrow { transform: rotate(-90deg); }
-
   .paste-content {
-    overflow: hidden;
-    max-height: 600px;
+    overflow: hidden; max-height: 600px;
     transition: max-height 0.3s ease, margin-top 0.25s ease;
     margin-top: 14px;
   }
-  .paste-section.collapsed .paste-content {
-    max-height: 0;
-    margin-top: 0;
-  }
+  .paste-section.collapsed .paste-content { max-height: 0; margin-top: 0; }
 
-  /* Inputs: 16px+ font prevents zoom-on-focus on mobile browsers */
   textarea {
-    width: 100%;
-    min-height: 160px;
-    border: 1px solid var(--rule);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.5);
-    font-family: var(--font);
-    font-size: 16px;
+    width: 100%; min-height: 160px;
+    border: 1px solid var(--rule); border-radius: 8px;
+    background: rgba(255,255,255,0.5);
+    font-family: var(--font); font-size: 16px;
     color: var(--ink);
-    resize: vertical;
-    outline: none;
-    padding: 14px;
-    line-height: 1.6;
+    resize: vertical; outline: none;
+    padding: 14px; line-height: 1.6;
     transition: border-color 0.15s ease, background 0.15s ease;
   }
-  textarea:focus {
-    border-color: var(--ink-soft);
-    background: rgba(255, 255, 255, 0.75);
-  }
-  textarea::placeholder {
-    color: var(--ink-faded);
-  }
+  textarea:focus { border-color: var(--ink-soft); background: rgba(255,255,255,0.75); }
+  textarea::placeholder { color: var(--ink-faded); }
 
-  .actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 14px;
-  }
+  .actions { display: flex; gap: 10px; margin-top: 14px; }
   button {
-    font-family: var(--font);
-    font-size: 14px;
-    font-weight: 500;
+    font-family: var(--font); font-size: 14px; font-weight: 500;
     border: none;
-    background: var(--ink);
-    color: var(--paper);
-    padding: 13px 18px;
-    border-radius: 8px;
+    background: var(--ink); color: var(--paper);
+    padding: 13px 18px; border-radius: 8px;
     cursor: pointer;
     transition: transform 0.08s ease, background 0.15s ease;
-    flex: 1;
-    -webkit-appearance: none;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
+    flex: 1; -webkit-appearance: none;
+    letter-spacing: 0.6px; text-transform: uppercase;
   }
   button:active { transform: scale(0.97); }
-  button.secondary {
-    background: transparent;
-    color: var(--ink-soft);
-    border: 1px solid var(--rule);
-  }
+  button.secondary { background: transparent; color: var(--ink-soft); border: 1px solid var(--rule); }
 
   .add-manual {
-    display: flex;
-    gap: 8px;
-    margin-top: 16px;
-    padding-top: 16px;
+    display: flex; gap: 8px;
+    margin-top: 16px; padding-top: 16px;
     border-top: 1px dashed var(--rule);
   }
   .add-manual input {
-    border: 1px solid var(--rule);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.5);
-    font-family: var(--font);
-    font-size: 16px;
+    border: 1px solid var(--rule); border-radius: 8px;
+    background: rgba(255,255,255,0.5);
+    font-family: var(--font); font-size: 16px;
     color: var(--ink);
-    padding: 12px 14px;
-    outline: none;
+    padding: 12px 14px; outline: none;
     transition: border-color 0.15s ease, background 0.15s ease;
     min-width: 0;
   }
-  .add-manual input:focus {
-    border-color: var(--ink-soft);
-    background: rgba(255, 255, 255, 0.75);
-  }
+  .add-manual input:focus { border-color: var(--ink-soft); background: rgba(255,255,255,0.75); }
   .add-manual input.name-input { flex: 1; }
   .add-manual input.qty-input { flex: 0 0 70px; text-align: center; }
-  .add-manual button {
-    flex: 0 0 56px;
-    font-size: 24px;
-    padding: 8px 12px;
-    line-height: 1;
-    text-transform: none;
-    letter-spacing: 0;
+  .add-manual button { flex: 0 0 56px; font-size: 24px; padding: 8px 12px; line-height: 1; text-transform: none; letter-spacing: 0; }
+
+  /* ── Category groups ── */
+  .group { margin-bottom: 18px; }
+  .cat-header {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--ink-soft);
+    padding: 14px 4px 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .cat-icon { font-size: 16px; }
+  .cat-count {
+    margin-left: auto;
+    font-size: 11px; font-weight: 500;
+    color: var(--ink-faded); letter-spacing: 0.5px;
   }
 
-  ul.list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
+  ul.cat-list { list-style: none; padding: 0; margin: 0; }
 
   li.item {
-    display: flex;
-    align-items: center;
-    padding: 16px 6px;
+    display: flex; align-items: center;
+    padding: 14px 6px;
     border-bottom: 1px solid var(--rule-soft);
     gap: 14px;
     cursor: pointer;
-    user-select: none;
-    -webkit-user-select: none;
+    user-select: none; -webkit-user-select: none;
     transition: opacity 0.25s ease;
-    animation: slideIn 0.3s ease both;
+    animation: slideIn 0.25s ease both;
   }
   @keyframes slideIn {
     from { opacity: 0; transform: translateX(-8px); }
@@ -252,109 +175,56 @@
   }
 
   .check {
-    width: 28px;
-    height: 28px;
-    border: 2px solid var(--ink);
-    border-radius: 50%;
+    width: 26px; height: 26px;
+    border: 2px solid var(--ink); border-radius: 50%;
     flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     transition: background 0.2s ease, border-color 0.2s ease;
     background: transparent;
   }
   .check::after {
     content: '✓';
-    color: var(--paper);
-    font-weight: 700;
-    font-size: 16px;
-    opacity: 0;
-    transform: scale(0.4);
+    color: var(--paper); font-weight: 700; font-size: 15px;
+    opacity: 0; transform: scale(0.4);
     transition: opacity 0.2s ease, transform 0.25s cubic-bezier(.5,1.6,.4,1);
   }
-  li.item.done .check {
-    background: var(--check);
-    border-color: var(--check);
-  }
-  li.item.done .check::after {
-    opacity: 1;
-    transform: scale(1);
-  }
+  li.item.done .check { background: var(--check); border-color: var(--check); }
+  li.item.done .check::after { opacity: 1; transform: scale(1); }
 
   .name {
-    flex: 1;
-    font-family: var(--font);
-    font-weight: 400;
-    font-size: 18px;
+    flex: 1; font-weight: 400; font-size: 17px;
     transition: all 0.25s ease;
     word-break: break-word;
   }
-  li.item.done .name {
-    text-decoration: line-through;
-    text-decoration-thickness: 2px;
-    color: var(--ink-faded);
-  }
+  li.item.done .name { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--ink-faded); }
 
   .qty {
-    font-family: var(--font);
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--accent);
-    flex-shrink: 0;
-    min-width: 36px;
-    text-align: right;
+    font-size: 14px; font-weight: 600; color: var(--accent);
+    flex-shrink: 0; min-width: 32px; text-align: right;
     letter-spacing: 0.3px;
   }
-  li.item.done .qty {
-    color: var(--ink-faded);
-    text-decoration: line-through;
-  }
+  li.item.done .qty { color: var(--ink-faded); text-decoration: line-through; }
 
   .delete {
-    background: transparent;
-    border: none;
-    color: var(--ink-faded);
-    font-size: 24px;
-    padding: 4px 10px;
-    flex: 0 0 auto;
-    width: auto;
-    opacity: 0.5;
-    line-height: 1;
-    border-radius: 6px;
-    text-transform: none;
-    letter-spacing: 0;
+    background: transparent; border: none;
+    color: var(--ink-faded); font-size: 22px;
+    padding: 4px 10px; flex: 0 0 auto; width: auto;
+    opacity: 0.5; line-height: 1; border-radius: 6px;
+    text-transform: none; letter-spacing: 0;
   }
-  .delete:active {
-    color: var(--accent);
-    opacity: 1;
-    background: rgba(183,71,42,0.08);
-  }
+  .delete:active { color: var(--accent); opacity: 1; background: rgba(183,71,42,0.08); }
 
   .empty {
-    text-align: center;
-    padding: 56px 20px 32px;
-    color: var(--ink-faded);
-    font-family: var(--font);
-    font-size: 14px;
-    line-height: 1.6;
+    text-align: center; padding: 56px 20px 32px;
+    color: var(--ink-faded); font-size: 14px; line-height: 1.6;
   }
-  .empty .arrow-up {
-    display: block;
-    font-size: 26px;
-    margin-bottom: 10px;
-    opacity: 0.6;
-  }
+  .empty .arrow-up { display: block; font-size: 26px; margin-bottom: 10px; opacity: 0.6; }
 
   .summary {
-    text-align: center;
-    margin-top: 24px;
-    padding: 12px;
-    font-family: var(--font);
-    font-size: 13px;
-    font-weight: 500;
+    text-align: center; margin-top: 24px; padding: 12px;
+    font-size: 13px; font-weight: 500;
     color: var(--ink-soft);
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
+    letter-spacing: 0.6px; text-transform: uppercase;
     transition: color 0.25s ease;
   }
   .summary.complete { color: var(--check); }
@@ -386,11 +256,110 @@
       </div>
     </div>
 
-    <ul class="list" id="list"></ul>
+    <div id="list"></div>
     <div class="summary" id="summary"></div>
   </div>
 
 <script>
+  // ───────────────────────────────────────────────────────────────
+  //  Category dictionary
+  //  Order matters: first match wins.
+  // ───────────────────────────────────────────────────────────────
+  const CATEGORIES = [
+  
+	['Pantry', '🥫', [
+      'rice', 'polao chal', 'flour', 'atta', 'maida', 'suji', 'semolina', 'sugar',
+      'salt', 'oil', 'vinegar', 'soy sauce', 'ketchup',
+      'mustard', 'jam', 'honey', 'peanut butter', 'pasta', 'noodle',
+      'noodles', 'spaghetti', 'macaroni', 'lentil', 'lentils', 'dal',
+      'chickpea', 'chola', 'tea', 'coffee', 'spice', 'spices', 'turmeric',
+      'cumin', 'jeera', 'coriander', 'dhonia', 'cardamom',
+      'elach', 'cinnamon', 'daruchini', 'clove', 'lobongo', 'paprika', 'masala',
+      'bay leaf', 'tej pata', 'saffron', 'jafran', 'cocoa',
+      'baking', 'yeast', 'cornstarch', 'corn starch', 'soup', 'broth',
+      'sauce', 'tomato paste', 'canned', 'tinned', 'pickle', 'achar', 'cereal',
+      'oats', 'oatmeal', 'granola', 'tin', 'can', 'panch foron'
+    ]],
+	['Dairy & Eggs', '🥛', [
+      'milk', 'cheese', 'butter', 'yogurt', 'tok doi',
+      'cream', 'ghee', 'paneer', 'chana', 'egg', 'eggs'
+    ]],
+	['Meat & Fish', '🐟', [
+      'chicken', 'beef', 'mutton', 'khasi', 'lamb',
+      'fish', 'mach', 'shrimp', 'prawn',
+      'salmon', 'tuna', 'ilish', 'hilsa', 'rui', 'katla', 'tilapia', 'pomfret',
+      'rupchanda', 'pangash', 'pangas', 'koi', 'magur', 'shing', 'goat','duck'
+    ]],
+	['Snacks', '🍪', [
+      'biscuit', 'biscuits', 'cookies', 'cracker', 'chips',
+      'chocolate', 'candy', 'sweet', 'sweets', 'mishti', 'chanachur',
+      'jhalmuri', 'popcorn', 'nuts', 'almond', 'cashew', 
+      'peanut', 'pistachio', 'walnut', 'raisin'
+    ]],
+	['Household', '🧴', [
+      'soap', 'shampoo', 'toothpaste', 'toothbrush', 'detergent',
+      'surf', 'tissue', 'tissues', 'paper towel', 'toilet paper', 'cleaner',
+      'bleach', 'sponge', 'foil', 'plastic bag', 'trash bag',
+      'garbage bag', 'battery', 'batteries', 'bulb', 'matches', 'candle',
+      'razor', 'deodorant', 'lotion', 'powder', 'comb', 'brush', 'mosquito',
+      'odomos', 'harpic', 'vim', 'vim bar' ,'liquid soap', 'lizol'
+    ]],
+    ['Bakery', '🥖', [
+      'bread', 'loaf', 'bun', 'roll', 'bagel', 'croissant', 'cake', 'pastry',
+      'muffin', 'donut', 'tortilla', 'naan', 'paratha',
+      'ruti', 'toast',
+    ]],
+    ['Fruit', '🍎', [
+      'apple', 'banana', 'orange', 'grape', 'grapes', 'strawberry', 'strawberries',
+      'blueberry', 'blueberries', 'raspberry', 'mango', 'pineapple',
+      'watermelon', 'melon', 'papaya', 'kiwi', 'peach', 'pear',
+      'plum', 'cherry', 'cherries', 'lemon', 'lime', 'avocado',
+      'pomegranate', 'guava', 'peyara', 'lichi', 'lychee', 'jackfruit', 'date', 'dates', 'fig', 'apricot', 'tangerine', 'mosambi',
+	  'gooseberry'
+    ]],
+    ['Vegetable', '🥕', [
+      'tomato', 'tomatoes', 'tomatoe', 'potato', 'potatoes', 'onion',
+	  'garlic', 'roshun', 'ginger', 'carrot', 'cabbage',
+      'cauliflower', 'broccoli', 'spinach', 'lettuce',
+      'cucumber', 'pepper', 'capsicum', 'eggplant', 'brinjal', 
+      'chili', 'chilli', 'lady finger', 'okra', 'pumpkin',
+      'gourd', 'lau', 'kakrol', 'patal', 'shim', 'beans',
+      'peas', 'corn', 'mushroom', 'celery', 'radish', 'beet', 'beetroot',
+      'kale', 'asparagus', 'zucchini', 'shak', 'puishak', 'data', 'kachu',
+      'sweet potato', 'mishti aloo'
+    ]],
+    ['Frozen', '❄', [
+      'ice cream', 'frozen', 'kulfi', 'discone', 'frozen fish', 'frozen paratha'
+    ]],
+    ['Drinks', '🥤', [
+      'water', 'juice', 'coke', 'pepsi', 'sprite', 'fanta',
+      '7up', 'mountain dew', 'tang',
+      'glucose', 'rooh afza'
+    ]]
+    
+  ];
+  const OTHER_ICON = '📦';
+
+  function categorize(name) {
+    const text = (name || '').toLowerCase();
+    if (!text) return 'Other';
+    for (const [cat, , keywords] of CATEGORIES) {
+      for (const kw of keywords) {
+        if (kw.includes(' ')) {
+          if (text.includes(kw)) return cat;
+        } else {
+          // word-boundary match for single words
+          const re = new RegExp('(^|[^a-z])' + kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z]|$)', 'i');
+          if (re.test(text)) return cat;
+        }
+      }
+    }
+    return 'Other';
+  }
+
+  // ───────────────────────────────────────────────────────────────
+  //  State + storage
+  // ───────────────────────────────────────────────────────────────
   const STORAGE_KEY = 'grocery-list-v1';
   let items = [];
 
@@ -404,12 +373,14 @@
     } catch (e) { items = []; }
     render();
   }
-
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
     catch (e) { console.warn('save failed', e); }
   }
 
+  // ───────────────────────────────────────────────────────────────
+  //  Parsing
+  // ───────────────────────────────────────────────────────────────
   function parseLine(raw) {
     let line = raw.trim();
     if (!line) return null;
@@ -419,49 +390,32 @@
 
     const num = '\\d+(?:[\\.,]\\d+)?';
     let m;
-
-    // "2 apples" / "2x apples" / "2 x apples"
     m = line.match(new RegExp('^(' + num + ')\\s*[x×]?\\s+(.+)$', 'i'));
     if (m && m[2].trim()) return { name: m[2].trim(), qty: toNum(m[1]) };
-
-    // "apples x 2"
     m = line.match(new RegExp('^(.+?)\\s+[x×]\\s*(' + num + ')\\s*$', 'i'));
     if (m) return { name: m[1].trim(), qty: toNum(m[2]) };
-
-    // "apples (2)"
     m = line.match(new RegExp('^(.+?)\\s*\\((' + num + ')\\)\\s*$'));
     if (m) return { name: m[1].trim(), qty: toNum(m[2]) };
-
-    // "apples - 2" or "apples: 2"
     m = line.match(new RegExp('^(.+?)\\s*[\\-–—:]\\s*(' + num + ')\\s*$'));
     if (m) return { name: m[1].trim(), qty: toNum(m[2]) };
-
-    // "apples 2" (number at end)
     m = line.match(new RegExp('^(.+?)\\s+(' + num + ')\\s*$'));
     if (m) return { name: m[1].trim(), qty: toNum(m[2]) };
-
     return { name: line, qty: 1 };
   }
+  function toNum(s) { return parseFloat(String(s).replace(',', '.')); }
 
-  function toNum(s) {
-    return parseFloat(String(s).replace(',', '.'));
-  }
-
+  // ───────────────────────────────────────────────────────────────
+  //  Actions
+  // ───────────────────────────────────────────────────────────────
   function parseAndAdd() {
     const ta = document.getElementById('input');
     const text = ta.value;
     if (!text.trim()) return;
-    const lines = text.split(/\r?\n/);
     let added = 0;
-    for (const line of lines) {
+    for (const line of text.split(/\r?\n/)) {
       const p = parseLine(line);
       if (p && p.name) {
-        items.push({
-          id: Date.now() + Math.random(),
-          name: p.name,
-          qty: p.qty,
-          done: false
-        });
+        items.push({ id: Date.now() + Math.random(), name: p.name, qty: p.qty, done: false });
         added++;
       }
     }
@@ -480,10 +434,8 @@
     if (!name) return;
     const qty = parseFloat(qtyEl.value.replace(',', '.')) || 1;
     items.push({ id: Date.now() + Math.random(), name, qty, done: false });
-    nameEl.value = '';
-    qtyEl.value = '';
-    save();
-    render();
+    nameEl.value = ''; qtyEl.value = '';
+    save(); render();
     nameEl.focus();
   }
 
@@ -491,23 +443,15 @@
     const it = items.find(i => i.id === id);
     if (it) { it.done = !it.done; save(); render(); }
   }
-
   function deleteItem(id, ev) {
     if (ev) ev.stopPropagation();
     items = items.filter(i => i.id !== id);
-    save();
-    render();
+    save(); render();
   }
-
   function clearAll() {
     if (items.length === 0) return;
-    if (confirm('Clear the whole list?')) {
-      items = [];
-      save();
-      render();
-    }
+    if (confirm('Clear the whole list?')) { items = []; save(); render(); }
   }
-
   function togglePaste() {
     document.getElementById('pasteSection').classList.toggle('collapsed');
   }
@@ -518,43 +462,70 @@
     return '×' + display;
   }
 
+  // ───────────────────────────────────────────────────────────────
+  //  Render — grouped by category
+  // ───────────────────────────────────────────────────────────────
   function render() {
-    const list = document.getElementById('list');
-    list.innerHTML = '';
+    const container = document.getElementById('list');
+    container.innerHTML = '';
 
     if (items.length === 0) {
-      list.innerHTML = '<div class="empty"><span class="arrow-up">↑</span>your list is empty<br>paste items above to begin</div>';
+      container.innerHTML = '<div class="empty"><span class="arrow-up">↑</span>your list is empty<br>paste items above to begin</div>';
       document.getElementById('summary').textContent = '';
       return;
     }
 
-    const sorted = [...items].sort((a, b) => (a.done === b.done) ? 0 : (a.done ? 1 : -1));
+    // group by category
+    const groups = new Map();
+    for (const [cat] of CATEGORIES) groups.set(cat, []);
+    groups.set('Other', []);
+    for (const item of items) {
+      const cat = categorize(item.name);
+      groups.get(cat).push(item);
+    }
 
-    for (const item of sorted) {
-      const li = document.createElement('li');
-      li.className = 'item' + (item.done ? ' done' : '');
-      li.onclick = () => toggleDone(item.id);
+    // render each non-empty group in order
+    const catMeta = new Map(CATEGORIES.map(([cat, icon]) => [cat, icon]));
+    catMeta.set('Other', OTHER_ICON);
 
-      const check = document.createElement('div');
-      check.className = 'check';
+    for (const [cat, list] of groups) {
+      if (list.length === 0) continue;
+      const groupEl = document.createElement('div');
+      groupEl.className = 'group';
 
-      const name = document.createElement('div');
-      name.className = 'name';
-      name.textContent = item.name;
+      const header = document.createElement('div');
+      header.className = 'cat-header';
+      const doneCount = list.filter(i => i.done).length;
+      header.innerHTML =
+        `<span class="cat-icon">${catMeta.get(cat)}</span>` +
+        `<span>${cat}</span>` +
+        `<span class="cat-count">${doneCount}/${list.length}</span>`;
+      groupEl.appendChild(header);
 
-      const qty = document.createElement('div');
-      qty.className = 'qty';
-      qty.textContent = formatQty(item.qty);
+      const ul = document.createElement('ul');
+      ul.className = 'cat-list';
 
-      const del = document.createElement('button');
-      del.className = 'delete';
-      del.innerHTML = '×';
-      del.title = 'remove';
-      del.setAttribute('aria-label', 'remove');
-      del.onclick = (e) => deleteItem(item.id, e);
+      // unchecked first within each category
+      list.sort((a, b) => (a.done === b.done) ? 0 : (a.done ? 1 : -1));
 
-      li.append(check, name, qty, del);
-      list.appendChild(li);
+      for (const item of list) {
+        const li = document.createElement('li');
+        li.className = 'item' + (item.done ? ' done' : '');
+        li.onclick = () => toggleDone(item.id);
+
+        const check = document.createElement('div'); check.className = 'check';
+        const name = document.createElement('div'); name.className = 'name'; name.textContent = item.name;
+        const qty = document.createElement('div'); qty.className = 'qty'; qty.textContent = formatQty(item.qty);
+        const del = document.createElement('button');
+        del.className = 'delete'; del.innerHTML = '×';
+        del.setAttribute('aria-label', 'remove');
+        del.onclick = (e) => deleteItem(item.id, e);
+
+        li.append(check, name, qty, del);
+        ul.appendChild(li);
+      }
+      groupEl.appendChild(ul);
+      container.appendChild(groupEl);
     }
 
     const done = items.filter(i => i.done).length;
