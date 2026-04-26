@@ -411,19 +411,35 @@
   // ───────────────────────────────────────────────────────────────
   //  Actions
   // ───────────────────────────────────────────────────────────────
+
+  // If an item with the same name (case-insensitive) already exists,
+  // bump its quantity and un-check it. Otherwise add as a new entry.
+  // Returns true if a new entry was created, false if it merged.
+  function addOrMerge(name, qty) {
+    const target = name.toLowerCase().trim();
+    const existing = items.find(i => i.name.toLowerCase().trim() === target);
+    if (existing) {
+      existing.qty = (existing.qty || 1) + (qty || 1);
+      existing.done = false;          // you need more, so it's not "done"
+      return false;
+    }
+    items.push({ id: Date.now() + Math.random(), name, qty, done: false });
+    return true;
+  }
+
   function parseAndAdd() {
     const ta = document.getElementById('input');
     const text = ta.value;
     if (!text.trim()) return;
-    let added = 0;
+    let touched = 0;
     for (const line of text.split(/\r?\n/)) {
       const p = parseLine(line);
       if (p && p.name) {
-        items.push({ id: Date.now() + Math.random(), name: p.name, qty: p.qty, done: false });
-        added++;
+        addOrMerge(p.name, p.qty);
+        touched++;
       }
     }
-    if (added > 0) {
+    if (touched > 0) {
       ta.value = '';
       save();
       render();
@@ -437,7 +453,7 @@
     const name = nameEl.value.trim();
     if (!name) return;
     const qty = parseFloat(qtyEl.value.replace(',', '.')) || 1;
-    items.push({ id: Date.now() + Math.random(), name, qty, done: false });
+    addOrMerge(name, qty);
     nameEl.value = ''; qtyEl.value = '';
     save(); render();
     nameEl.focus();
