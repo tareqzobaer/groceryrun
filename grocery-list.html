@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f3ecd9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Groceries">
+<title>Grocery List</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23f3ecd9'/><ellipse cx='32' cy='42' rx='18' ry='17' fill='%23b7472a'/><path d='M32 25 C32 20 36 16 41 16 C41 22 37 25 32 25 Z' fill='%235d8a3b'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f3ecd9;
+    --ink: #2a2418;
+    --ink-soft: #6b5d44;
+    --ink-faded: #a89c80;
+    --rule: #d6c89f;
+    --rule-soft: #e5dab7;
+    --check: #5d8a3b;
+    --accent: #b7472a;
+    --font: 'Roboto', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font);
+    font-size: 17px;
+    line-height: 1.45;
+    min-height: 100vh;
+    overscroll-behavior: contain;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.46 0 0 0 0 0.32 0 0 0 0.08 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    opacity: 0.55;
+    pointer-events: none;
+    z-index: 1;
+    mix-blend-mode: multiply;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.5) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(120,90,40,0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 2;
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 26px;
+    padding-bottom: 18px;
+    position: relative;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: 0;
+    height: 1px;
+    background: var(--rule);
+    box-shadow: 0 4px 0 -3px var(--rule-soft);
+  }
+
+  h1 {
+    font-family: var(--font);
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1;
+    margin: 0;
+    color: var(--ink);
+    letter-spacing: -0.5px;
+  }
+  .date {
+    font-family: var(--font);
+    font-weight: 400;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  .paste-section {
+    background: rgba(255, 252, 240, 0.55);
+    border: 1px dashed var(--rule);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 24px;
+    transition: padding 0.25s ease;
+  }
+  .paste-section.collapsed { padding: 12px 16px; }
+
+  .paste-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+  .arrow { transition: transform 0.25s ease; font-size: 14px; }
+  .paste-section.collapsed .arrow { transform: rotate(-90deg); }
+
+  .paste-content {
+    overflow: hidden;
+    max-height: 600px;
+    transition: max-height 0.3s ease, margin-top 0.25s ease;
+    margin-top: 14px;
+  }
+  .paste-section.collapsed .paste-content {
+    max-height: 0;
+    margin-top: 0;
+  }
+
+  /* Inputs: 16px+ font prevents zoom-on-focus on mobile browsers */
+  textarea {
+    width: 100%;
+    min-height: 160px;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    font-family: var(--font);
+    font-size: 16px;
+    color: var(--ink);
+    resize: vertical;
+    outline: none;
+    padding: 14px;
+    line-height: 1.6;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  textarea:focus {
+    border-color: var(--ink-soft);
+    background: rgba(255, 255, 255, 0.75);
+  }
+  textarea::placeholder {
+    color: var(--ink-faded);
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  button {
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 13px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.08s ease, background 0.15s ease;
+    flex: 1;
+    -webkit-appearance: none;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+  button:active { transform: scale(0.97); }
+  button.secondary {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--rule);
+  }
+
+  .add-manual {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--rule);
+  }
+  .add-manual input {
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    font-family: var(--font);
+    font-size: 16px;
+    color: var(--ink);
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    min-width: 0;
+  }
+  .add-manual input:focus {
+    border-color: var(--ink-soft);
+    background: rgba(255, 255, 255, 0.75);
+  }
+  .add-manual input.name-input { flex: 1; }
+  .add-manual input.qty-input { flex: 0 0 70px; text-align: center; }
+  .add-manual button {
+    flex: 0 0 56px;
+    font-size: 24px;
+    padding: 8px 12px;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  ul.list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  li.item {
+    display: flex;
+    align-items: center;
+    padding: 16px 6px;
+    border-bottom: 1px solid var(--rule-soft);
+    gap: 14px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: opacity 0.25s ease;
+    animation: slideIn 0.3s ease both;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .check {
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    background: transparent;
+  }
+  .check::after {
+    content: '✓';
+    color: var(--paper);
+    font-weight: 700;
+    font-size: 16px;
+    opacity: 0;
+    transform: scale(0.4);
+    transition: opacity 0.2s ease, transform 0.25s cubic-bezier(.5,1.6,.4,1);
+  }
+  li.item.done .check {
+    background: var(--check);
+    border-color: var(--check);
+  }
+  li.item.done .check::after {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .name {
+    flex: 1;
+    font-family: var(--font);
+    font-weight: 400;
+    font-size: 18px;
+    transition: all 0.25s ease;
+    word-break: break-word;
+  }
+  li.item.done .name {
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+    color: var(--ink-faded);
+  }
+
+  .qty {
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    flex-shrink: 0;
+    min-width: 36px;
+    text-align: right;
+    letter-spacing: 0.3px;
+  }
+  li.item.done .qty {
+    color: var(--ink-faded);
+    text-decoration: line-through;
+  }
+
+  .delete {
+    background: transparent;
+    border: none;
+    color: var(--ink-faded);
+    font-size: 24px;
+    padding: 4px 10px;
+    flex: 0 0 auto;
+    width: auto;
+    opacity: 0.5;
+    line-height: 1;
+    border-radius: 6px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .delete:active {
+    color: var(--accent);
+    opacity: 1;
+    background: rgba(183,71,42,0.08);
+  }
+
+  .empty {
+    text-align: center;
+    padding: 56px 20px 32px;
+    color: var(--ink-faded);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .empty .arrow-up {
+    display: block;
+    font-size: 26px;
+    margin-bottom: 10px;
+    opacity: 0.6;
+  }
+
+  .summary {
+    text-align: center;
+    margin-top: 24px;
+    padding: 12px;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    transition: color 0.25s ease;
+  }
+  .summary.complete { color: var(--check); }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Groceries</h1>
+      <div class="date" id="date"></div>
+    </header>
+
+    <div class="paste-section" id="pasteSection">
+      <div class="paste-toggle" onclick="togglePaste()">
+        <span>paste your list</span>
+        <span class="arrow">▾</span>
+      </div>
+      <div class="paste-content">
+        <textarea id="input" placeholder="2 apples&#10;1 loaf of bread&#10;milk&#10;eggs x 12&#10;tomatoes - 4"></textarea>
+        <div class="actions">
+          <button onclick="parseAndAdd()">add to list</button>
+          <button class="secondary" onclick="clearAll()">clear all</button>
+        </div>
+        <div class="add-manual">
+          <input type="text" id="manualName" class="name-input" placeholder="quick add">
+          <input type="text" id="manualQty" class="qty-input" placeholder="qty" inputmode="decimal">
+          <button onclick="addManual()">+</button>
+        </div>
+      </div>
+    </div>
+
+    <ul class="list" id="list"></ul>
+    <div class="summary" id="summary"></div>
+  </div>
+
+<script>
+  const STORAGE_KEY = 'grocery-list-v1';
+  let items = [];
+
+  document.getElementById('date').textContent = new Date()
+    .toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) items = JSON.parse(raw) || [];
+    } catch (e) { items = []; }
+    render();
+  }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+    catch (e) { console.warn('save failed', e); }
+  }
+
+  function parseLine(raw) {
+    let line = raw.trim();
+    if (!line) return null;
+    line = line.replace(/^[\-•\*\+→›►◦‣⁃]+\s*/, '');
+    line = line.replace(/^\d+[\.\)]\s+/, '');
+    if (!line) return null;
+
+    const num = '\\d+(?:[\\.,]\\d+)?';
+    let m;
+
+    // "2 apples" / "2x apples" / "2 x apples"
+    m = line.match(new RegExp('^(' + num + ')\\s*[x×]?\\s+(.+)$', 'i'));
+    if (m && m[2].trim()) return { name: m[2].trim(), qty: toNum(m[1]) };
+
+    // "apples x 2"
+    m = line.match(new RegExp('^(.+?)\\s+[x×]\\s*(' + num + ')\\s*$', 'i'));
+    if (m) return { name: m[1].trim(), qty: toNum(m[2]) };
+
+    // "apples (2)"
+    m = line.match(new RegExp('^(.+?)\\s*\\((' + num + ')\\)\\s*$'));
+    if (m) return { name: m[1].trim(), qty: toNum(m[2]) };
+
+    // "apples - 2" or "apples: 2"
+    m = line.match(new RegExp('^(.+?)\\s*[\\-–—:]\\s*(' + num + ')\\s*$'));
+    if (m) return { name: m[1].trim(), qty: toNum(m[2]) };
+
+    // "apples 2" (number at end)
+    m = line.match(new RegExp('^(.+?)\\s+(' + num + ')\\s*$'));
+    if (m) return { name: m[1].trim(), qty: toNum(m[2]) };
+
+    return { name: line, qty: 1 };
+  }
+
+  function toNum(s) {
+    return parseFloat(String(s).replace(',', '.'));
+  }
+
+  function parseAndAdd() {
+    const ta = document.getElementById('input');
+    const text = ta.value;
+    if (!text.trim()) return;
+    const lines = text.split(/\r?\n/);
+    let added = 0;
+    for (const line of lines) {
+      const p = parseLine(line);
+      if (p && p.name) {
+        items.push({
+          id: Date.now() + Math.random(),
+          name: p.name,
+          qty: p.qty,
+          done: false
+        });
+        added++;
+      }
+    }
+    if (added > 0) {
+      ta.value = '';
+      save();
+      render();
+      document.getElementById('pasteSection').classList.add('collapsed');
+    }
+  }
+
+  function addManual() {
+    const nameEl = document.getElementById('manualName');
+    const qtyEl = document.getElementById('manualQty');
+    const name = nameEl.value.trim();
+    if (!name) return;
+    const qty = parseFloat(qtyEl.value.replace(',', '.')) || 1;
+    items.push({ id: Date.now() + Math.random(), name, qty, done: false });
+    nameEl.value = '';
+    qtyEl.value = '';
+    save();
+    render();
+    nameEl.focus();
+  }
+
+  function toggleDone(id) {
+    const it = items.find(i => i.id === id);
+    if (it) { it.done = !it.done; save(); render(); }
+  }
+
+  function deleteItem(id, ev) {
+    if (ev) ev.stopPropagation();
+    items = items.filter(i => i.id !== id);
+    save();
+    render();
+  }
+
+  function clearAll() {
+    if (items.length === 0) return;
+    if (confirm('Clear the whole list?')) {
+      items = [];
+      save();
+      render();
+    }
+  }
+
+  function togglePaste() {
+    document.getElementById('pasteSection').classList.toggle('collapsed');
+  }
+
+  function formatQty(q) {
+    if (q === 1) return '';
+    const display = Number.isInteger(q) ? q : q.toFixed(2).replace(/\.?0+$/, '');
+    return '×' + display;
+  }
+
+  function render() {
+    const list = document.getElementById('list');
+    list.innerHTML = '';
+
+    if (items.length === 0) {
+      list.innerHTML = '<div class="empty"><span class="arrow-up">↑</span>your list is empty<br>paste items above to begin</div>';
+      document.getElementById('summary').textContent = '';
+      return;
+    }
+
+    const sorted = [...items].sort((a, b) => (a.done === b.done) ? 0 : (a.done ? 1 : -1));
+
+    for (const item of sorted) {
+      const li = document.createElement('li');
+      li.className = 'item' + (item.done ? ' done' : '');
+      li.onclick = () => toggleDone(item.id);
+
+      const check = document.createElement('div');
+      check.className = 'check';
+
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.textContent = item.name;
+
+      const qty = document.createElement('div');
+      qty.className = 'qty';
+      qty.textContent = formatQty(item.qty);
+
+      const del = document.createElement('button');
+      del.className = 'delete';
+      del.innerHTML = '×';
+      del.title = 'remove';
+      del.setAttribute('aria-label', 'remove');
+      del.onclick = (e) => deleteItem(item.id, e);
+
+      li.append(check, name, qty, del);
+      list.appendChild(li);
+    }
+
+    const done = items.filter(i => i.done).length;
+    const total = items.length;
+    const summary = document.getElementById('summary');
+    summary.textContent = (done === total) ? '✓ all done' : `${done} of ${total} picked`;
+    summary.classList.toggle('complete', done === total && total > 0);
+  }
+
+  ['manualName', 'manualQty'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addManual(); }
+    });
+  });
+
+  load();
+</script>
+</body>
+</html>
