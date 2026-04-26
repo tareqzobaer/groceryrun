@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#f3ecd9">
+<meta name="theme-color" content="#fcffeb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1e0f" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Grocery Run">
@@ -16,15 +17,34 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #f3ecd9;
-    --ink: #2a2418;
-    --ink-soft: #6b5d44;
-    --ink-faded: #a89c80;
-    --rule: #d6c89f;
-    --rule-soft: #e5dab7;
-    --check: #5d8a3b;
+    --paper: #fcffeb;
+    --ink: #1e2010;
+    --ink-soft: #4a5230;
+    --ink-faded: #8a9470;
+    --rule: #c8d48a;
+    --rule-soft: #dce8a8;
+    --check: #4a7a2a;
     --accent: #b7472a;
+    --input-bg: rgba(255,255,255,0.55);
+    --input-bg-focus: rgba(255,255,255,0.85);
+    --paste-bg: rgba(250,255,230,0.55);
     --font: 'Roboto', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1a1e0f;
+      --ink: #e8edcc;
+      --ink-soft: #a8b880;
+      --ink-faded: #5a6645;
+      --rule: #3a4520;
+      --rule-soft: #2e3818;
+      --check: #72b84a;
+      --accent: #e06040;
+      --input-bg: rgba(255,255,255,0.06);
+      --input-bg-focus: rgba(255,255,255,0.10);
+      --paste-bg: rgba(255,255,255,0.04);
+    }
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -73,7 +93,7 @@
   .date { font-weight: 400; font-size: 13px; color: var(--ink-soft); margin-top: 8px; letter-spacing: 0.6px; text-transform: uppercase; }
 
   .paste-section {
-    background: rgba(255,252,240,0.55);
+    background: var(--paste-bg);
     border: 1px dashed var(--rule);
     border-radius: 10px; padding: 16px;
     margin-bottom: 24px;
@@ -99,14 +119,14 @@
   textarea {
     width: 100%; min-height: 160px;
     border: 1px solid var(--rule); border-radius: 8px;
-    background: rgba(255,255,255,0.5);
+    background: var(--input-bg);
     font-family: var(--font); font-size: 16px;
     color: var(--ink);
     resize: vertical; outline: none;
     padding: 14px; line-height: 1.6;
     transition: border-color 0.15s ease, background 0.15s ease;
   }
-  textarea:focus { border-color: var(--ink-soft); background: rgba(255,255,255,0.75); }
+  textarea:focus { border-color: var(--ink-soft); background: var(--input-bg-focus); }
   textarea::placeholder { color: var(--ink-faded); }
 
   .actions { display: flex; gap: 10px; margin-top: 14px; }
@@ -130,14 +150,14 @@
   }
   .add-manual input {
     border: 1px solid var(--rule); border-radius: 8px;
-    background: rgba(255,255,255,0.5);
+    background: var(--input-bg);
     font-family: var(--font); font-size: 16px;
     color: var(--ink);
     padding: 12px 14px; outline: none;
     transition: border-color 0.15s ease, background 0.15s ease;
     min-width: 0;
   }
-  .add-manual input:focus { border-color: var(--ink-soft); background: rgba(255,255,255,0.75); }
+  .add-manual input:focus { border-color: var(--ink-soft); background: var(--input-bg-focus); }
   .add-manual input.name-input { flex: 1; }
   .add-manual input.qty-input { flex: 0 0 70px; text-align: center; }
   .add-manual button { flex: 0 0 56px; font-size: 24px; padding: 8px 12px; line-height: 1; text-transform: none; letter-spacing: 0; }
