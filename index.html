@@ -95,7 +95,7 @@
     height: 1px; background: var(--rule);
     box-shadow: 0 4px 0 -3px var(--rule-soft);
   }
-  h1 { font-weight: 700; font-size: 32px; line-height: 1; margin: 0; letter-spacing: -0.5px; }
+  h1 { font-weight: 700; font-size: 34px; line-height: 1; margin: 0; letter-spacing: -0.5px; }
   .date { font-weight: 400; font-size: 13px; color: var(--ink-soft); margin-top: 8px; letter-spacing: 0.6px; text-transform: uppercase; }
 
   .paste-section {
@@ -407,13 +407,7 @@
     body::after { background: none; }
     body::before { opacity: 0.15; }
   }
-	h1 {
-	  font-weight: 700;
-	  font-size: 34px;
-	  letter-spacing: -0.5px;
 
-	  
-	}
 	@media (prefers-color-scheme: dark) {
 	  h1 {
 		text-shadow: 0 1px 0 rgba(255,255,255,0.05);
@@ -517,13 +511,17 @@
 
     ['Pantry', '🥫', [
       'rice', 'chal', 'polao chal', 'flour', 'atta', 'maida', 'suji', 'semolina', 'sugar',
-      'salt', 'oil', 'vinegar', 'soy sauce', 'ketchup', 'semai', 'lachcha',
+      'salt', 'oil', 'vinegar', 'soy sauce', 'ketchup', 'semai', 'lachcha', 'shemai',
       'mustard', 'jam', 'honey', 'peanut butter', 'pasta', 'noodle',
       'spaghetti', 'macaroni', 'lentil', 'dal', 'daal',
-      'chickpea', 'chola', 'tea', 'coffee', 'cocoa', 'chana daal',
-      'baking', 'yeast', 'cornstarch', 'corn starch', 'soup', 'broth',
+      'chickpea', 'chola', 'tea', 'coffee', 'chana daal',
+      'cornstarch', 'corn starch', 'soup', 'broth',
       'sauce', 'tomato paste', 'canned', 'tinned', 'pickle', 'achar', 'cereal',
-      'oat', 'oatmeal', 'granola', 'tin', 'can', 'custard', 'seed', 'besan'
+      'oat', 'oatmeal', 'granola', 'tin', 'can', 'custard', 'seed', 'besan', 
+	  'muri', 'chira', 'chiura', 'khoi', 'gur', 'molasses', 'jaggery', 'mishri',
+		'lobon', 'chini', 'tel', 'payesh',
+		'condensed milk', 'powdered milk', 'milk powder', 'vermicelli',
+		'rava', 'dalda', 'vanaspati', 'tapioca', 'sabudana', 'arrowroot'
     ]],
     ['Dairy & Eggs', '🥛', [
       'milk', 'cheese', 'butter', 'yogurt', 'tok doi',
@@ -533,13 +531,18 @@
       'chicken', 'beef', 'mutton', 'khasi', 'lamb',
       'fish', 'mach', 'shrimp', 'prawn',
       'salmon', 'tuna', 'ilish', 'hilsa', 'rui', 'katla', 'tilapia', 'pomfret',
-      'rupchanda', 'pangash', 'pangas', 'koi', 'magur', 'shing', 'goat', 'duck'
+      'rupchanda', 'pangash', 'pangas', 'koi', 'magur', 'shing', 'goat', 'duck',
+	  'liver', 'mince', 'keema',
+	  'chingri', 'galda', 'baim', 'pabda', 'tengra', 'boal', 'shoal', 'bhetki',
+	  'air mach'
     ]],
     ['Snacks', '🍪', [
       'biscuit', 'cookie', 'cracker', 'chip',
       'chocolate', 'candy', 'sweet', 'mishti', 'chanachur',
       'jhalmuri', 'popcorn', 'nut', 'almond', 'cashew',
-      'peanut', 'pistachio', 'walnut', 'raisin', 'naru'
+      'peanut', 'pistachio', 'walnut', 'raisin', 'naru',
+	  'murali', 'moa', 'laddu', 'pitha', 'wafer',
+      'dried fruit', 'trail mix', 'energy bar', 'protein bar'
     ]],
     ['Household and Toiletries', '🧴', [
       'soap', 'shampoo', 'toothpaste', 'toothbrush', 'detergent', 'body wash',
@@ -547,49 +550,71 @@
       'bleach', 'sponge', 'foil', 'plastic bag', 'trash bag',
       'garbage bag', 'battery', 'bulb', 'match', 'candle',
       'razor', 'deodorant', 'lotion', 'comb', 'brush', 'mosquito',
-      'odomos', 'harpic', 'vim', 'vim bar', 'liquid soap', 'lizol'
+      'odomos', 'harpic', 'vim', 'vim bar', 'liquid soap', 'lizol', 
+	  'hand wash', 'sanitizer', 'sanitary pad', 'napkin', 'cotton',
+	  'bandage', 'plaster', 'floor cleaner', 'air freshener', 'perfume',
+	  'aftershave', 'jharu', 'broom', 'mop', 'wiper', 'glove',
+	  'insecticide', 'coil', 'veet'
     ]],
     ['Spices', '🧂', [
       'spice', 'masala', 'turmeric',
       'cumin', 'jeera', 'coriander', 'dhonia', 'cardamom',
       'elach', 'cinnamon', 'daruchini', 'clove', 'lobongo', 'paprika',
       'bay leaf', 'tej pata', 'saffron', 'jafran', 'panch foron', 'oregano', 'chilli powder',
-      'herb'
+      'herb', 'pepper', 'biryani masala', 'ready mix', 'methi', 'fenugreek', 'ajwain',
+	  'shukna morich', 'dried chilli', 'black pepper', 'gol morich',
+      'white pepper', 'mace', 'star anise', 'fennel', 'mouri', 'asafoetida', 'hing',
+	  'tamarind powder', 'chat masala'
     ]],
+	['Baking', '🧁', [
+	  'baking powder', 'baking soda', 'yeast', 'vanilla essence',
+	  'food color', 'food colour', 'icing sugar', 'icing', 'fondant',
+	  'chocolate chip', 'sprinkle', 'cocoa powder', 
+	  'whipped cream', 'cream cheese', 'cocoa'
+	]],
     ['Bakery', '🥖', [
       'bread', 'loaf', 'bun', 'roll', 'bagel', 'croissant', 'cake', 'pastry',
-      'muffin', 'donut', 'tortilla', 'naan', 'paratha',
+      'muffin', 'donut', 'tortilla', 'naan', 'paratha', 'butter bun',
       'ruti', 'toast'
     ]],
     ['Fruit', '🍎', [
       'apple', 'banana', 'orange', 'grape', 'strawberry',
       'blueberry', 'raspberry', 'mango', 'pineapple',
       'watermelon', 'melon', 'papaya', 'kiwi', 'peach', 'pear',
-      'plum', 'cherry', 'avocado',
+      'plum', 'cherry', 'avocado', 'sofeda',
       'pomegranate', 'guava', 'peyara', 'lichi', 'lychee', 'jackfruit',
       'date', 'fig', 'apricot', 'tangerine', 'mosambi',
-      'gooseberry', 'mandarin'
+      'gooseberry', 'mandarin', 'malta', 
+	  'bel', 'tetul', 'tamarind', 'jambura', 'pomelo', 'starfruit',
+	  'dragon fruit', 'passion fruit', 'coconut', 'narikel', 'dab'
     ]],
     ['Vegetable', '🥕', [
-      'tomato', 'potato', 'onion',
+      'tomato', 'potato', 'onion', 'ada',
       'garlic', 'roshun', 'ginger', 'carrot', 'cabbage',
       'cauliflower', 'broccoli', 'spinach', 'lettuce',
-      'cucumber', 'pepper', 'capsicum', 'eggplant', 'brinjal',
+      'cucumber', 'capsicum', 'eggplant', 'brinjal',
       'chili', 'chilli', 'lady finger', 'okra', 'pumpkin',
       'gourd', 'lau', 'kakrol', 'patal', 'shim', 'bean',
       'pea', 'corn', 'mushroom', 'celery', 'radish', 'beet', 'beetroot',
       'kale', 'asparagus', 'zucchini', 'shak', 'puishak', 'data', 'kachu',
-      'sweet potato', 'mishti aloo', 'cilantro', 'lemon', 'lime'
+      'sweet potato', 'mishti aloo', 'cilantro', 'lemon', 'lime',
+	  'dhundul', 'jhinga', 'chichinga', 'korola', 'bitter gourd',
+      'kacha morich', 'dhonia pata', 'palong shak', 'lal shak',
+      'kochu shak', 'fulkopi', 'badhakopi', 'misti kumra', 'pepe',
+      'shosha', 'lebu', 'sheem', 'sim', 'barbati', 'borboti', 'yard long bean',
+      'taro', 'yam', 'raw banana', 'kachkola', 'kacha kola'
+	  
     ]],
     ['Frozen', '❄', [
-      'ice cream', 'frozen', 'kulfi', 'frozen fish', 'frozen paratha', 'frozen ruti'
+      'ice cream', 'frozen', 'kulfi', 'frozen fish', 'frozen paratha', 'frozen ruti',
+	  'frozen fries', 'french fries', 'nugget','frozen vegetable', 'frozen pea'
     ]],
     ['Drinks', '🥤', [
       'water', 'juice', 'coke', 'pepsi', 'sprite', 'fanta',
       '7up', 'mountain dew', 'tang', 'mojo', 'frutika',
       'glucose', 'rooh afza'
     ]]
-
+	
   ];
   const OTHER_ICON = '📦';
 
@@ -621,27 +646,33 @@
   }
 
   function categorize(name) {
-    const text = (name || '').toLowerCase();
-    if (!text) return 'Other';
-    for (const [cat, , keywords] of CATEGORIES) {
-      for (const kw of keywords) {
-        if (kw.includes(' ')) {
-          // Multi-word: pluralize the LAST word only
-          // ("ice cream" → "ice creams?", "lady finger" → "lady fingers?")
-          const parts = kw.split(' ');
-          const last = parts.pop();
-          const head = parts.map(reEscape).join('\\s+');
-          const pattern = (head ? head + '\\s+' : '') + pluralPattern(last);
-          const re = new RegExp('(^|[^a-z])' + pattern + '([^a-z]|$)', 'i');
-          if (re.test(text)) return cat;
-        } else {
-          const re = new RegExp('(^|[^a-z])' + pluralPattern(kw) + '([^a-z]|$)', 'i');
-          if (re.test(text)) return cat;
-        }
-      }
+  const text = (name || '').toLowerCase();
+  if (!text) return 'Other';
+
+  // Pass 1 — multi-word keywords (more specific, checked first regardless of category order)
+  for (const [cat, , keywords] of CATEGORIES) {
+    for (const kw of keywords) {
+      if (!kw.includes(' ')) continue;
+      const parts = kw.split(' ');
+      const last = parts.pop();
+      const head = parts.map(reEscape).join('\\s+');
+      const pattern = (head ? head + '\\s+' : '') + pluralPattern(last);
+      const re = new RegExp('(^|[^a-z])' + pattern + '([^a-z]|$)', 'i');
+      if (re.test(text)) return cat;
     }
-    return 'Other';
   }
+
+  // Pass 2 — single-word keywords
+  for (const [cat, , keywords] of CATEGORIES) {
+    for (const kw of keywords) {
+      if (kw.includes(' ')) continue;
+      const re = new RegExp('(^|[^a-z])' + pluralPattern(kw) + '([^a-z]|$)', 'i');
+      if (re.test(text)) return cat;
+    }
+  }
+
+  return 'Other';
+ }
 
   // ───────────────────────────────────────────────────────────────
   //  State + storage
