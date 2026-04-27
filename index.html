@@ -11,7 +11,7 @@
 <title>Grocery Run</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23f3ecd9'/><ellipse cx='32' cy='42' rx='18' ry='17' fill='%23b7472a'/><path d='M32 25 C32 20 36 16 41 16 C41 22 37 25 32 25 Z' fill='%235d8a3b'/></svg>">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -285,6 +285,89 @@
     width: auto;
   }
   .share-btn:active { background: var(--input-bg); }
+  /* ── Info button ── */
+  .info-btn {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink-soft);
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 12px; font-weight: 700;
+    padding: 0; flex: none; width: auto;
+    text-transform: none; letter-spacing: 0;
+    line-height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 22px;
+    opacity: 0.75;
+  }
+  .info-btn:active { opacity: 1; background: var(--input-bg); }
+
+  /* ── Info modal ── */
+  .info-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.5);
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .info-overlay.open { display: flex; }
+  .info-modal {
+    background: var(--paper);
+    width: 100%; max-width: 540px;
+    border-radius: 18px 18px 0 0;
+    padding: 0 0 40px;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: sheetUp 0.28s cubic-bezier(.32,1,.42,1) both;
+  }
+  @keyframes sheetUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+  .info-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px 12px;
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--rule);
+    position: sticky; top: 0; background: var(--paper); z-index: 1;
+  }
+  .info-close {
+    background: transparent; border: none;
+    color: var(--ink-faded); font-size: 22px;
+    padding: 0 4px; flex: none; width: auto;
+    text-transform: none; letter-spacing: 0; line-height: 1;
+  }
+  .info-body { padding: 16px 20px 0; }
+  .info-intro { margin: 0 0 14px; font-size: 14px; color: var(--ink-soft); }
+  .info-section {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--ink-faded);
+    margin: 20px 0 6px;
+  }
+  .info-body p { margin: 0 0 6px; font-size: 15px; line-height: 1.55; }
+  .info-body strong { color: var(--ink); font-weight: 600; }
+  .info-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 14px; margin-bottom: 4px;
+  }
+  .info-table tr { border-bottom: 1px solid var(--rule-soft); }
+  .info-table tr:last-child { border-bottom: none; }
+  .info-table td { padding: 9px 4px; vertical-align: middle; }
+  .info-table td:first-child { width: 48%; }
+  .info-table td:last-child { color: var(--ink-soft); font-size: 13px; }
+  code {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 13px;
+    background: var(--input-bg);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: var(--ink);
+  }
+
   @media (prefers-color-scheme: dark) {
     :root {
       --paper: #000000;
@@ -307,14 +390,17 @@
 <body>
   <div class="container">
     <header>
-      <h1>Grocery Run</h1>
+      <h1>Groceries</h1>
       <div class="date" id="date"></div>
     </header>
 
     <div class="paste-section" id="pasteSection">
       <div class="paste-toggle" onclick="togglePaste()">
         <span>paste your list</span>
-        <span class="arrow">▾</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="info-btn" onclick="event.stopPropagation();toggleInfo()" aria-label="Parsing rules">?</button>
+          <span class="arrow">▾</span>
+        </div>
       </div>
       <div class="paste-content">
         <textarea id="input" placeholder="2 apples&#10;1 loaf of bread&#10;milk&#10;eggs x 12&#10;tomatoes - 4"></textarea>
@@ -323,8 +409,8 @@
           <button class="secondary" onclick="clearAll()">clear all</button>
         </div>
         <div class="add-manual">
-          <input type="text" id="manualName" class="name-input" placeholder="quick add">
-          <input type="text" id="manualQty" class="qty-input" placeholder="qty" inputmode="decimal">
+          <input type="text" id="manualName" class="name-input" placeholder="Quick add">
+          <input type="text" id="manualQty" class="qty-input" placeholder="Qty" inputmode="decimal">
           <button onclick="addManual()">+</button>
         </div>
       </div>
@@ -334,6 +420,34 @@
     <div class="summary" id="summary"></div>
     <div class="share-wrap" id="shareWrap" style="display:none">
       <button class="share-btn" onclick="shareBought()">✓ share what's bought</button>
+    </div>
+
+    <!-- Info modal -->
+    <div class="info-overlay" id="infoOverlay" onclick="toggleInfo()">
+      <div class="info-modal" onclick="event.stopPropagation()">
+        <div class="info-header">
+          <span>Parsing rules</span>
+          <button class="info-close" onclick="toggleInfo()">×</button>
+        </div>
+        <div class="info-body">
+          <p class="info-intro">One item per line. Quantity is parsed automatically from these formats:</p>
+          <table class="info-table">
+            <tr><td><code>2 apples</code></td><td>number before name</td></tr>
+            <tr><td><code>apples x 2</code></td><td>× or x after name</td></tr>
+            <tr><td><code>2x apples</code></td><td>number + x prefix</td></tr>
+            <tr><td><code>apples (2)</code></td><td>number in brackets</td></tr>
+            <tr><td><code>apples - 2</code></td><td>dash or colon separator</td></tr>
+            <tr><td><code>apples 2</code></td><td>number at end</td></tr>
+            <tr><td><code>apples</code></td><td>no number → qty 1</td></tr>
+          </table>
+          <p class="info-section">Delimiters</p>
+          <p>Items can be separated by a <strong>new line</strong> or a <strong>comma</strong>.</p>
+          <p class="info-section">Auto-merge</p>
+          <p>Adding an item that already exists (e.g. <code>apple</code> when <code>Apple</code> is in the list) bumps its quantity instead of creating a duplicate. Plurals are normalised — <code>apples</code> merges with <code>apple</code>.</p>
+          <p class="info-section">Prefixes stripped</p>
+          <p>Leading bullets, dashes, and numbered list prefixes like <code>1.</code> or <code>1)</code> are removed automatically.</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -611,7 +725,12 @@
   }
   function clearAll() {
     if (items.length === 0) return;
-    if (confirm('Clear the whole list?')) { items = []; save(); render(); }
+    if (confirm('Clear the whole list?')) {
+      items = [];
+      save();
+      render();
+      document.getElementById('shareWrap').style.display = 'none';
+    }
   }
   function togglePaste() {
     document.getElementById('pasteSection').classList.toggle('collapsed');
@@ -633,6 +752,7 @@
     if (items.length === 0) {
       container.innerHTML = '<div class="empty"><span class="arrow-up">↑</span>Nothing here yet.<br>Paste a list or quick-add above.</div>';
       document.getElementById('summary').textContent = '';
+      document.getElementById('shareWrap').style.display = 'none';
       return;
     }
 
@@ -790,6 +910,10 @@
         prompt('Copy this:', text);
       });
     }
+  }
+
+  function toggleInfo() {
+    document.getElementById('infoOverlay').classList.toggle('open');
   }
 
   load();
