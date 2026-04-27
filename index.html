@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#fcffeb" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Grocery Run">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Grocery Run — Smart Shopping List">
@@ -71,6 +71,8 @@
     position: relative; z-index: 2;
     max-width: 540px; margin: 0 auto;
     padding: 28px 20px 80px;
+	padding-top: calc(28px + env(safe-area-inset-top));
+	padding-bottom: calc(80px + env(safe-area-inset-bottom));
   }
 
   header {
@@ -475,6 +477,25 @@
         </div>
       </div>
     </div>
+	<!-- Edit modal -->
+	<div class="info-overlay" id="editOverlay" onclick="closeEdit()">
+	  <div class="info-modal" onclick="event.stopPropagation()" style="padding-bottom:32px">
+		<div class="info-header">
+		  <span>Edit item</span>
+		  <button class="info-close" onclick="closeEdit()">×</button>
+		</div>
+		<div class="info-body" style="display:flex;flex-direction:column;gap:12px;padding-top:20px">
+		  <input type="text" id="editName" class="name-input"
+				 style="border:1px solid var(--rule);border-radius:8px;background:var(--input-bg);
+						font-family:var(--font);font-size:17px;color:var(--ink);padding:13px 14px;outline:none;width:100%">
+		  <input type="text" id="editQty" inputmode="decimal"
+				 style="border:1px solid var(--rule);border-radius:8px;background:var(--input-bg);
+						font-family:var(--font);font-size:17px;color:var(--ink);padding:13px 14px;outline:none;width:100%"
+				 placeholder="Quantity (e.g. 2)">
+		  <button onclick="saveEdit()" style="margin-top:4px">save</button>
+		</div>
+	  </div>
+	</div>
   </div>
 
 <script>
@@ -617,6 +638,7 @@
   // ───────────────────────────────────────────────────────────────
   const STORAGE_KEY = 'grocery-list-v1';
   let items = [];
+  let collapsedCats = new Set();
 
   document.getElementById('date').textContent = new Date()
     .toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
@@ -767,7 +789,32 @@
     const display = Number.isInteger(q) ? q : q.toFixed(2).replace(/\.?0+$/, '');
     return '×' + display;
   }
+	// ── Edit modal ──────────────────────────────────────────────────
+	let editingId = null;
 
+	function editItem(id) {
+	  const it = items.find(i => i.id === id);
+	  if (!it) return;
+	  editingId = id;
+	  document.getElementById('editName').value = it.name;
+	  document.getElementById('editQty').value = it.qty === 1 ? '' : it.qty;
+	  document.getElementById('editOverlay').classList.add('open');
+	  setTimeout(() => document.getElementById('editName').focus(), 80);
+	}
+	function closeEdit() {
+	  editingId = null;
+	  document.getElementById('editOverlay').classList.remove('open');
+	}
+	function saveEdit() {
+	  const it = items.find(i => i.id === editingId);
+	  if (!it) return closeEdit();
+	  const newName = document.getElementById('editName').value.trim();
+	  const newQty  = parseFloat(document.getElementById('editQty').value.replace(',','.')) || 1;
+	  if (newName) { it.name = newName; it.qty = newQty; }
+	  save(); render(); closeEdit();
+	}
+	document.getElementById('editName').addEventListener('keydown', e => { if (e.key==='Enter') { document.getElementById('editQty').focus(); } });
+	document.getElementById('editQty').addEventListener('keydown',  e => { if (e.key==='Enter') saveEdit(); });
   // ───────────────────────────────────────────────────────────────
   //  Render — grouped by category
   // ───────────────────────────────────────────────────────────────
@@ -803,14 +850,22 @@
       const header = document.createElement('div');
       header.className = 'cat-header';
       const doneCount = list.filter(i => i.done).length;
-      header.innerHTML =
-        `<span class="cat-icon">${catMeta.get(cat)}</span>` +
-        `<span>${cat}</span>` +
-        `<span class="cat-count">${doneCount}/${list.length}</span>`;
+      const isCollapsed = collapsedCats.has(cat);
+	header.innerHTML =
+	  `<span class="cat-icon">${catMeta.get(cat)}</span>` +
+	  `<span>${cat}</span>` +
+	  `<span class="cat-count">${doneCount}/${list.length}</span>` +
+	  `<span style="font-size:12px;margin-left:6px;transition:transform 0.2s;display:inline-block;transform:rotate(${isCollapsed ? '-90' : '0'}deg)">▾</span>`;
+	header.style.cursor = 'pointer';
+	header.onclick = () => {
+	  collapsedCats.has(cat) ? collapsedCats.delete(cat) : collapsedCats.add(cat);
+	  render();
+	};
       groupEl.appendChild(header);
 
       const ul = document.createElement('ul');
       ul.className = 'cat-list';
+	  if (collapsedCats.has(cat)) ul.style.display = 'none';
 
       // unchecked first within each category
       list.sort((a, b) => (a.done === b.done) ? 0 : (a.done ? 1 : -1));
@@ -839,12 +894,21 @@
         // ── Swipe-to-delete touch handling ──
         let startX = 0, startY = 0, dx = 0;
         let swiping = false, decided = false;
+		let pressTimer = null, longPressed = false;
         const THRESHOLD = 80; // px to trigger delete
+
 
         li.addEventListener('touchstart', (e) => {
           startX = e.touches[0].clientX;
           startY = e.touches[0].clientY;
           dx = 0; swiping = false; decided = false;
+		  longPressed = false;                                          
+		clearTimeout(pressTimer);                                    
+		pressTimer = setTimeout(() => {                               
+		  longPressed = true;                                         
+		  if (navigator.vibrate) navigator.vibrate(60);              
+		  editItem(item.id);                                          
+		}, 500);                                                      
           li.style.transition = 'none';
         }, { passive: true });
 
@@ -858,6 +922,7 @@
           if (!decided) {
             if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
             decided = true;
+			clearTimeout(pressTimer); 
             swiping = Math.abs(dx) > Math.abs(dy);
           }
           if (!swiping) return;
@@ -871,7 +936,8 @@
         }, { passive: false });
 
         li.addEventListener('touchend', () => {
-          li.style.transition = '';
+          clearTimeout(pressTimer);
+		  li.style.transition = '';
           if (swiping && -dx >= THRESHOLD) {
             // Commit delete with slide-out animation
             if (navigator.vibrate) navigator.vibrate(30);
@@ -887,7 +953,7 @@
 
         // Tap (no swipe) → toggle done
         li.addEventListener('click', (e) => {
-          if (Math.abs(dx) > 6) return; // was a swipe, not a tap
+          if (Math.abs(dx) > 6 || longPressed) return; // was a swipe, not a tap || longPressed
           toggleDone(item.id);
         });
 
