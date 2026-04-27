@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#fcffeb" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1a1e0f" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Grocery Run">
@@ -29,22 +29,6 @@
     --input-bg-focus: rgba(255,255,255,0.85);
     --paste-bg: rgba(250,255,230,0.55);
     --font: 'Roboto', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --paper: #1a1e0f;
-      --ink: #e8edcc;
-      --ink-soft: #a8b880;
-      --ink-faded: #5a6645;
-      --rule: #3a4520;
-      --rule-soft: #2e3818;
-      --check: #72b84a;
-      --accent: #e06040;
-      --input-bg: rgba(255,255,255,0.06);
-      --input-bg-focus: rgba(255,255,255,0.10);
-      --paste-bg: rgba(255,255,255,0.04);
-    }
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -171,6 +155,10 @@
     color: var(--ink-soft);
     padding: 14px 4px 8px;
     border-bottom: 1px solid var(--rule);
+    position: sticky;
+    top: 0;
+    background: var(--paper);
+    z-index: 10;
   }
   .cat-icon { font-size: 16px; }
   .cat-count {
@@ -181,19 +169,46 @@
 
   ul.cat-list { list-style: none; padding: 0; margin: 0; }
 
+  .item-wrap {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .item-wrap .swipe-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: flex-end;
+    padding-right: 22px;
+    color: rgba(255,255,255,0.55);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+    pointer-events: none;
+    text-transform: uppercase;
+    font-size: 13px;
+  }
   li.item {
     display: flex; align-items: center;
     padding: 14px 6px;
-    border-bottom: 1px solid var(--rule-soft);
     gap: 14px;
     cursor: pointer;
     user-select: none; -webkit-user-select: none;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.25s ease, transform 0.08s ease;
     animation: slideIn 0.25s ease both;
+    background: var(--paper);
+    position: relative;
+    will-change: transform;
+    touch-action: pan-y;
   }
   @keyframes slideIn {
     from { opacity: 0; transform: translateX(-8px); }
     to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideOut {
+    to { transform: translateX(-100%); opacity: 0; }
   }
 
   .check {
@@ -250,6 +265,43 @@
     transition: color 0.25s ease;
   }
   .summary.complete { color: var(--check); }
+
+  .share-wrap {
+    text-align: center;
+    margin-top: 10px;
+    padding-bottom: 16px;
+  }
+  .share-btn {
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--ink-soft);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border-radius: 20px;
+    flex: none;
+    width: auto;
+  }
+  .share-btn:active { background: var(--input-bg); }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #000000;
+      --ink: #e8edcc;
+      --ink-soft: #a8b880;
+      --ink-faded: #5a6645;
+      --rule: #3a4a1a;
+      --rule-soft: #2a3612;
+      --check: #72b84a;
+      --accent: #e06040;
+      --input-bg: rgba(255,255,255,0.05);
+      --input-bg-focus: rgba(255,255,255,0.09);
+      --paste-bg: rgba(255,255,255,0.03);
+    }
+    body::after { background: none; }
+    body::before { opacity: 0.15; }
+  }
 </style>
 </head>
 <body>
@@ -271,8 +323,8 @@
           <button class="secondary" onclick="clearAll()">clear all</button>
         </div>
         <div class="add-manual">
-          <input type="text" id="manualName" class="name-input" placeholder="Quick add">
-          <input type="text" id="manualQty" class="qty-input" placeholder="Qty" inputmode="decimal">
+          <input type="text" id="manualName" class="name-input" placeholder="quick add">
+          <input type="text" id="manualQty" class="qty-input" placeholder="qty" inputmode="decimal">
           <button onclick="addManual()">+</button>
         </div>
       </div>
@@ -280,6 +332,9 @@
 
     <div id="list"></div>
     <div class="summary" id="summary"></div>
+    <div class="share-wrap" id="shareWrap" style="display:none">
+      <button class="share-btn" onclick="shareBought()">✓ share what's bought</button>
+    </div>
   </div>
 
 <script>
@@ -509,9 +564,13 @@
     const ta = document.getElementById('input');
     const text = ta.value;
     if (!text.trim()) return;
+
+    // Split on newlines or commas
+    const segments = text.split(/\r?\n|,/);
+
     let touched = 0;
-    for (const line of text.split(/\r?\n/)) {
-      const p = parseLine(line);
+    for (const seg of segments) {
+      const p = parseLine(seg);
       if (p && p.name) {
         addOrMerge(p.name, p.qty);
         touched++;
@@ -539,7 +598,11 @@
 
   function toggleDone(id) {
     const it = items.find(i => i.id === id);
-    if (it) { it.done = !it.done; save(); render(); }
+    if (it) {
+      it.done = !it.done;
+      if (navigator.vibrate) navigator.vibrate(it.done ? 40 : 20);
+      save(); render();
+    }
   }
   function deleteItem(id, ev) {
     if (ev) ev.stopPropagation();
@@ -607,9 +670,15 @@
       list.sort((a, b) => (a.done === b.done) ? 0 : (a.done ? 1 : -1));
 
       for (const item of list) {
+        const wrap = document.createElement('div');
+        wrap.className = 'item-wrap';
+
+        const bg = document.createElement('div');
+        bg.className = 'swipe-bg';
+        bg.textContent = 'Delete';
+
         const li = document.createElement('li');
         li.className = 'item' + (item.done ? ' done' : '');
-        li.onclick = () => toggleDone(item.id);
 
         const check = document.createElement('div'); check.className = 'check';
         const name = document.createElement('div'); name.className = 'name'; name.textContent = item.name;
@@ -620,7 +689,64 @@
         del.onclick = (e) => deleteItem(item.id, e);
 
         li.append(check, name, qty, del);
-        ul.appendChild(li);
+
+        // ── Swipe-to-delete touch handling ──
+        let startX = 0, startY = 0, dx = 0;
+        let swiping = false, decided = false;
+        const THRESHOLD = 80; // px to trigger delete
+
+        li.addEventListener('touchstart', (e) => {
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+          dx = 0; swiping = false; decided = false;
+          li.style.transition = 'none';
+        }, { passive: true });
+
+        li.addEventListener('touchmove', (e) => {
+          const cx = e.touches[0].clientX;
+          const cy = e.touches[0].clientY;
+          dx = cx - startX;
+          const dy = cy - startY;
+
+          // Decide once: is this a horizontal or vertical gesture?
+          if (!decided) {
+            if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+            decided = true;
+            swiping = Math.abs(dx) > Math.abs(dy);
+          }
+          if (!swiping) return;
+
+          // Only allow left swipe (dx < 0)
+          if (dx > 0) { dx = 0; return; }
+          e.preventDefault();
+          li.style.transform = `translateX(${dx}px)`;
+          const progress = Math.min(1, -dx / THRESHOLD);
+          bg.style.opacity = progress;
+        }, { passive: false });
+
+        li.addEventListener('touchend', () => {
+          li.style.transition = '';
+          if (swiping && -dx >= THRESHOLD) {
+            // Commit delete with slide-out animation
+            if (navigator.vibrate) navigator.vibrate(30);
+            li.style.animation = 'slideOut 0.22s ease forwards';
+            li.addEventListener('animationend', () => deleteItem(item.id), { once: true });
+          } else {
+            // Snap back
+            li.style.transform = '';
+            bg.style.opacity = 0;
+          }
+          swiping = false;
+        });
+
+        // Tap (no swipe) → toggle done
+        li.addEventListener('click', (e) => {
+          if (Math.abs(dx) > 6) return; // was a swipe, not a tap
+          toggleDone(item.id);
+        });
+
+        wrap.append(bg, li);
+        ul.appendChild(wrap);
       }
       groupEl.appendChild(ul);
       container.appendChild(groupEl);
@@ -631,6 +757,7 @@
     const summary = document.getElementById('summary');
     summary.textContent = (done === total) ? '✓ all done' : `${done} of ${total} picked`;
     summary.classList.toggle('complete', done === total && total > 0);
+    document.getElementById('shareWrap').style.display = done > 0 ? 'block' : 'none';
   }
 
   ['manualName', 'manualQty'].forEach(id => {
@@ -638,6 +765,32 @@
       if (e.key === 'Enter') { e.preventDefault(); addManual(); }
     });
   });
+
+  function shareBought() {
+    // Preserve original insertion order, show only checked items
+    const bought = items.filter(i => i.done);
+    if (bought.length === 0) return;
+
+    const lines = bought.map(i => {
+      const qty = (i.qty && i.qty !== 1) ? ` (${i.qty})` : '';
+      return `✓ ${i.name}${qty}`;
+    });
+    const text = lines.join('\n');
+
+    if (navigator.share) {
+      navigator.share({ text }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.share-btn');
+        const orig = btn.textContent;
+        btn.textContent = '✓ copied!';
+        setTimeout(() => { btn.textContent = orig; }, 2000);
+      }).catch(() => {
+        // Last resort: show in a prompt so user can copy manually
+        prompt('Copy this:', text);
+      });
+    }
+  }
 
   load();
 
