@@ -1,5 +1,5 @@
 {
-  "name": "Grocery List",
+  "name": "Grocery Run",
   "short_name": "Groceries",
   "description": "A simple grocery list with auto-categorization",
   "start_url": "./",

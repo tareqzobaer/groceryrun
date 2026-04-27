@@ -8,6 +8,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Grocery Run">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Grocery Run — Smart Shopping List">
+<meta property="og:description" content="Quickly paste, categorize, and check off your groceries.">
+<meta property="og:image" content="icon-512.png">
+
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:title" content="Grocery Run">
+<meta property="twitter:description" content="Quickly paste, categorize, and check off your groceries.">
+
+
 <title>Grocery Run</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -385,12 +395,28 @@
     body::after { background: none; }
     body::before { opacity: 0.15; }
   }
+	h1 {
+	  font-weight: 700;
+	  font-size: 34px;
+	  letter-spacing: -0.5px;
+
+	  
+	}
+	@media (prefers-color-scheme: dark) {
+	  h1 {
+		text-shadow: 0 1px 0 rgba(255,255,255,0.05);
+	  }
+	}
+	
+	h1 span {
+		color: #87C35A;
+	}
 </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Groceries</h1>
+      <h1><span>Grocery</span> Run</h1>
       <div class="date" id="date"></div>
     </header>
 
@@ -443,7 +469,7 @@
           <p class="info-section">Delimiters</p>
           <p>Items can be separated by a <strong>new line</strong> or a <strong>comma</strong>.</p>
           <p class="info-section">Auto-merge</p>
-          <p>Adding an item that already exists (e.g. <code>apple</code> when <code>Apple</code> is in the list) bumps its quantity instead of creating a duplicate. Plurals are normalised — <code>apples</code> merges with <code>apple</code>.</p>
+          <p>Adding an item that already exists (e.g. <code>apple</code> when <code>Apple</code> is in the list) bumps its quantity instead of creating a duplicate. Plurals are normalized: <code>apples</code> merges with <code>apple</code>.</p>
           <p class="info-section">Prefixes stripped</p>
           <p>Leading bullets, dashes, and numbered list prefixes like <code>1.</code> or <code>1)</code> are removed automatically.</p>
         </div>
