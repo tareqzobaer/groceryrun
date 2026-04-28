@@ -189,6 +189,39 @@
     color: var(--ink-faded); letter-spacing: 0.5px;
   }
 
+  /* ── Drag-to-reorder ── */
+  .drag-handle {
+    font-size: 19px; line-height: 1;
+    color: var(--ink-faded);
+    padding: 0 8px 0 2px;
+    cursor: grab; touch-action: none;
+    user-select: none; -webkit-user-select: none;
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+  .group.dragging {
+    opacity: 0.5;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.14);
+    border-radius: 8px;
+    position: relative; z-index: 8;
+  }
+  .group.drag-over-above { border-top: 2px solid var(--check); }
+  .group.drag-over-below { border-bottom: 2px solid var(--check); }
+  .reorder-banner {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--ink); color: var(--paper);
+    border-radius: 10px; padding: 11px 14px; margin-bottom: 14px;
+    font-size: 13px; font-weight: 500; letter-spacing: 0.4px;
+    animation: slideIn 0.2s ease both;
+  }
+  .reorder-done-btn {
+    background: var(--paper); color: var(--ink);
+    border: none; border-radius: 6px;
+    padding: 6px 14px; font-size: 13px; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    cursor: pointer; flex: none; width: auto;
+  }
+
   ul.cat-list { list-style: none; padding: 0; margin: 0; }
 
   .item-wrap {
@@ -213,7 +246,7 @@
     font-size: 13px;
   }
   li.item {
-    display: flex; align-items: center;
+    display: flex; align-items: flex-start;
     padding: 14px 6px;
     gap: 14px;
     cursor: pointer;
@@ -240,6 +273,7 @@
     display: flex; align-items: center; justify-content: center;
     transition: background 0.2s ease, border-color 0.2s ease;
     background: transparent;
+    margin-top: 1px;
   }
   .check::after {
     content: '✓';
@@ -263,6 +297,16 @@
     letter-spacing: 0.3px;
   }
   li.item.done .qty { color: var(--ink-faded); text-decoration: line-through; }
+
+  .note {
+    display: block;
+    font-size: 13px; font-style: italic;
+    color: var(--ink-faded);
+    margin-top: 2px;
+    font-weight: 400;
+    line-height: 1.3;
+  }
+  li.item.done .note { color: var(--ink-faded); opacity: 0.6; }
 
   .delete {
     background: transparent; border: none;
@@ -468,13 +512,13 @@
           <p>Paste a list of groceries (one per line or comma-separated) and tap <strong>Add to List</strong>. Or use the quick-add bar to type items one at a time.</p>
           <p>Quantities are picked up automatically: <code>2 apples</code>, <code>apples x2</code>, <code>apples (2)</code> all work. Duplicates are merged, not doubled.</p>
           <p class="info-section">Units</p>
-          <p>Add a unit right after the quantity: <code>500g flour</code>, <code>2 kg chicken</code>, <code>milk 1L</code>, <code>biscuit 1 box</code>. Supported units: <code>g</code> · <code>kg</code> · <code>L</code> · <code>ml</code> · <code>dozen</code> · <code>box</code>. In the quick-add bar, type the unit in the qty field, e.g. <code>2 kg</code>.</p>
+          <p>Add a unit right after the quantity: <code>500g flour</code>, <code>2 kg chicken</code>, <code>milk 1L</code>, <code>biscuit 1 box</code>, <code>tea 2 packet</code>. Supported units: <code>g</code> · <code>kg</code> · <code>L</code> · <code>ml</code> · <code>dozen</code> · <code>box</code> · <code>packet</code> / <code>pkt</code>. In the quick-add bar, type the unit in the qty field, e.g. <code>2 kg</code> or <code>1 pkt</code>.</p>
           <p class="info-section">Checking Off</p>
           <p>Tap any item to mark it picked. Checked items sink to the bottom of their category. Tap again to uncheck.</p>
           <p class="info-section">Editing and Deleting</p>
-          <p><strong>Long-press</strong> an item to edit its name, quantity, or unit. <strong>Swipe left</strong> to delete, or tap the <strong>×</strong> button.</p>
-          <p class="info-section">Sharing</p>
-          <p>Once you have checked some items off, tap <strong>Share what's bought</strong> to send the list or copy it to your clipboard.</p>
+          <p><strong>Long-press</strong> an item to edit its name, quantity, unit, or add a note (e.g. "from Agora", "green kind"). <strong>Swipe left</strong> to delete, or tap the <strong>×</strong> button.</p>
+          <p class="info-section">Reordering Categories</p>
+          <p><strong>Long-press any category header</strong> to enter reorder mode. Each header shows a <strong>⠿</strong> drag handle — drag it up or down to match your store's aisle order. Tap <strong>Done</strong> when finished. The order is remembered across sessions.</p>
         </div>
       </div>
     </div>
@@ -499,6 +543,10 @@
 						  font-family:var(--font);font-size:17px;color:var(--ink);padding:13px 14px;outline:none;width:100%;box-sizing:border-box;min-width:0"
 				   placeholder="Unit (kg, g, L…)">
 		  </div>
+		  <input type="text" id="editNote"
+				 style="border:1px solid var(--rule);border-radius:8px;background:var(--input-bg);
+						font-family:var(--font);font-size:15px;color:var(--ink);padding:13px 14px;outline:none;width:100%;box-sizing:border-box;font-style:italic"
+				 placeholder="Note (e.g. from Agora, green kind…)">
 		  <button onclick="saveEdit()" style="margin-top:4px">save</button>
 		</div>
 	  </div>
@@ -622,6 +670,16 @@
   ];
   const OTHER_ICON = '📦';
 
+  // Flat set of every keyword across all categories. Used by
+  // singularize() to disambiguate plurals like "cookies" (which
+  // could singularize to "cooky" or "cookie") and to leave
+  // already-singular words ending in s ("asparagus", "molasses")
+  // untouched.
+  const KEYWORD_SET = new Set();
+  for (const [, , kws] of CATEGORIES) {
+    for (const kw of kws) KEYWORD_SET.add(kw.toLowerCase());
+  }
+
   // Escape regex metacharacters in a literal string
   function reEscape(s) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -682,8 +740,12 @@
   //  State + storage
   // ───────────────────────────────────────────────────────────────
   const STORAGE_KEY = 'grocery-list-v1';
+  const CAT_ORDER_KEY = 'grocery-catorder-v1';
   let items = [];
   let collapsedCats = new Set();
+  let catOrder = [];
+  let reorderMode = false;
+  let dragState = null;
 
   document.getElementById('date').textContent = new Date()
     .toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
@@ -693,6 +755,7 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) items = JSON.parse(raw) || [];
     } catch (e) { items = []; }
+    loadCatOrder();
     render();
   }
   function save() {
@@ -701,11 +764,51 @@
   }
 
   // ───────────────────────────────────────────────────────────────
+  //  Category order — persisted separately from items
+  // ───────────────────────────────────────────────────────────────
+  function defaultCatOrder() {
+    return [...CATEGORIES.map(([c]) => c), 'Other'];
+  }
+  function loadCatOrder() {
+    const def = defaultCatOrder();
+    try {
+      const raw = localStorage.getItem(CAT_ORDER_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        const defSet = new Set(def);
+        const savedSet = new Set(saved);
+        // Keep saved order, append any new categories not yet in saved
+        catOrder = [
+          ...saved.filter(c => defSet.has(c)),
+          ...def.filter(c => !savedSet.has(c))
+        ];
+        return;
+      }
+    } catch (e) {}
+    catOrder = [...def];
+  }
+  function saveCatOrder() {
+    try { localStorage.setItem(CAT_ORDER_KEY, JSON.stringify(catOrder)); } catch (e) {}
+  }
+  function enterReorderMode() {
+    reorderMode = true;
+    if (navigator.vibrate) navigator.vibrate(60);
+    render();
+    // Scroll the list into view so banner is visible
+    document.getElementById('list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function exitReorderMode() {
+    reorderMode = false;
+    saveCatOrder();
+    render();
+  }
+
+  // ───────────────────────────────────────────────────────────────
   //  Unit handling
   // ───────────────────────────────────────────────────────────────
   const NUM = '\\d+(?:[.,]\\d+)?';
   const UNIT_ADJ  = '(?:kg|ml|mL|ML|[gGlL])';
-  const UNIT_WORD = '(?:dozen|box(?:es)?|kilograms?|grams?|liters?|litres?|milliliters?|millilitres?)';
+  const UNIT_WORD = '(?:dozen|box(?:es)?|packet(?:s)?|pkt|kilograms?|grams?|liters?|litres?|milliliters?|millilitres?)';
   const UNIT_ALL  = `(?:${UNIT_WORD}|${UNIT_ADJ})`;
 
   function normalizeUnit(u) {
@@ -717,6 +820,7 @@
     if (/^m[lL]$/.test(l) || /^milli(liter|litre)s?$/.test(l)) return 'ml';
     if (l === 'dozen') return 'dozen';
     if (l === 'box' || l === 'boxes') return 'box';
+    if (l === 'packet' || l === 'packets' || l === 'pkt') return 'packet';
     return null;
   }
 
@@ -787,23 +891,37 @@
   // ───────────────────────────────────────────────────────────────
 
   // Strip English plural suffixes to get a canonical singular form.
-  // Mirrors the same rules used in pluralPattern():
-  //   cherries → cherry   (ies → y, when preceded by a consonant)
-  //   tomatoes → tomato   (oes → o)
-  //   boxes    → box      (ses/xes/zes/ches/shes → base)
-  //   apples   → apple    (trailing s, but not ss)
-  // Words that are already singular pass through unchanged.
+  // Some endings are ambiguous (e.g. -ies can come from -y like
+  // "berries → berry" OR from -ie like "cookies → cookie"), so we
+  // generate candidate singulars and let KEYWORD_SET pick the right
+  // one. Words that are already singular and present in the
+  // dictionary ("asparagus", "molasses") pass through unchanged.
   function singularize(word) {
     const w = word.trim().toLowerCase();
-    // consonant + ies → y  (cherries → cherry, berries → berry)
-    if (/[^aeiou]ies$/.test(w)) return w.slice(0, -3) + 'y';
-    // oes → o  (tomatoes → tomato, potatoes → potato)
-    if (/[^aeiou]oes$/.test(w)) return w.slice(0, -2);
-    // sibilant + es → base  (boxes → box, dishes → dish, buzzes → buzz)
-    if (/(s|x|z|ch|sh)es$/.test(w)) return w.slice(0, -2);
-    // plain s, but not ss, and word must be at least 4 chars (guards "bus", "gas")
-    if (w.length >= 4 && /[^s]s$/.test(w)) return w.slice(0, -1);
-    return w;
+
+    const candidates = [];
+    if (/[^aeiou]ies$/.test(w)) {
+      candidates.push(w.slice(0, -3) + 'y'); // berries → berry
+      candidates.push(w.slice(0, -1));       // cookies → cookie
+    } else if (/[^aeiou]oes$/.test(w)) {
+      candidates.push(w.slice(0, -2));       // tomatoes → tomato
+    } else if (/(s|x|z|ch|sh)es$/.test(w)) {
+      candidates.push(w.slice(0, -2));       // boxes → box
+    } else if (w.length >= 4 && /[^s]s$/.test(w)) {
+      candidates.push(w.slice(0, -1));       // apples → apple
+    }
+
+    if (candidates.length === 0) return w;
+
+    // Prefer a candidate that matches the dictionary.
+    for (const c of candidates) {
+      if (KEYWORD_SET.has(c)) return c;
+    }
+    // Original is in the dictionary (asparagus, molasses) — leave it.
+    if (KEYWORD_SET.has(w)) return w;
+    // Truly unknown word — fall back to the first guess so
+    // "kebab" and "kebabs" still merge.
+    return candidates[0];
   }
 
   // If an item with the same singular root already exists,
@@ -906,6 +1024,7 @@
 	  document.getElementById('editName').value = it.name;
 	  document.getElementById('editQty').value = it.qty === 1 ? '' : it.qty;
 	  document.getElementById('editUnit').value = it.unit || '';
+	  document.getElementById('editNote').value = it.note || '';
 	  document.getElementById('editOverlay').classList.add('open');
 	  setTimeout(() => document.getElementById('editName').focus(), 80);
 	}
@@ -919,12 +1038,71 @@
 	  const newName = document.getElementById('editName').value.trim();
 	  const newQty  = parseFloat(document.getElementById('editQty').value.replace(',','.')) || 1;
 	  const newUnit = normalizeUnit(document.getElementById('editUnit').value.trim() || null);
-	  if (newName) { it.name = newName; it.qty = newQty; it.unit = newUnit; }
+	  const newNote = document.getElementById('editNote').value.trim();
+	  if (newName) { it.name = newName; it.qty = newQty; it.unit = newUnit; it.note = newNote || null; }
 	  save(); render(); closeEdit();
 	}
 	document.getElementById('editName').addEventListener('keydown', e => { if (e.key==='Enter') { document.getElementById('editQty').focus(); } });
 	document.getElementById('editQty').addEventListener('keydown',  e => { if (e.key==='Enter') { document.getElementById('editUnit').focus(); } });
-	document.getElementById('editUnit').addEventListener('keydown', e => { if (e.key==='Enter') saveEdit(); });
+	document.getElementById('editUnit').addEventListener('keydown', e => { if (e.key==='Enter') { document.getElementById('editNote').focus(); } });
+	document.getElementById('editNote').addEventListener('keydown', e => { if (e.key==='Enter') saveEdit(); });
+  // ───────────────────────────────────────────────────────────────
+  //  Category drag-to-reorder (touch)
+  // ───────────────────────────────────────────────────────────────
+  function startGroupDrag(e, groupEl, cat) {
+    if (dragState) return;
+    e.preventDefault();
+    dragState = { groupEl, cat };
+    groupEl.classList.add('dragging');
+    document.addEventListener('touchmove', onGroupDragMove, { passive: false });
+    document.addEventListener('touchend', onGroupDragEnd, { once: true });
+  }
+
+  function onGroupDragMove(e) {
+    if (!dragState) return;
+    e.preventDefault();
+    const touchY = e.touches[0].clientY;
+    const allGroups = [...document.querySelectorAll('#list .group[data-cat]')];
+    const curIdx = allGroups.indexOf(dragState.groupEl);
+    if (curIdx === -1) return;
+
+    // Clear visual indicators
+    allGroups.forEach(g => g.classList.remove('drag-over-above', 'drag-over-below'));
+
+    // Swap with element above if finger crosses its midpoint
+    if (curIdx > 0) {
+      const above = allGroups[curIdx - 1];
+      const r = above.getBoundingClientRect();
+      if (touchY < r.top + r.height / 2) {
+        above.parentNode.insertBefore(dragState.groupEl, above);
+        const ai = catOrder.indexOf(above.dataset.cat);
+        const di = catOrder.indexOf(dragState.cat);
+        if (ai !== -1 && di !== -1) [catOrder[ai], catOrder[di]] = [catOrder[di], catOrder[ai]];
+        return;
+      }
+    }
+    // Swap with element below if finger crosses its midpoint
+    if (curIdx < allGroups.length - 1) {
+      const below = allGroups[curIdx + 1];
+      const r = below.getBoundingClientRect();
+      if (touchY > r.top + r.height / 2) {
+        below.parentNode.insertBefore(below, dragState.groupEl);
+        const bi = catOrder.indexOf(below.dataset.cat);
+        const di = catOrder.indexOf(dragState.cat);
+        if (bi !== -1 && di !== -1) [catOrder[bi], catOrder[di]] = [catOrder[di], catOrder[bi]];
+        return;
+      }
+    }
+  }
+
+  function onGroupDragEnd() {
+    if (!dragState) return;
+    document.removeEventListener('touchmove', onGroupDragMove);
+    dragState.groupEl.classList.remove('dragging');
+    dragState = null;
+    saveCatOrder();
+  }
+
   // ───────────────────────────────────────────────────────────────
   //  Render — grouped by category
   // ───────────────────────────────────────────────────────────────
@@ -948,29 +1126,79 @@
       groups.get(cat).push(item);
     }
 
-    // render each non-empty group in order
+    // render each non-empty group in catOrder order
     const catMeta = new Map(CATEGORIES.map(([cat, icon]) => [cat, icon]));
     catMeta.set('Other', OTHER_ICON);
 
-    for (const [cat, list] of groups) {
-      if (list.length === 0) continue;
+    // Reorder mode banner
+    if (reorderMode) {
+      const banner = document.createElement('div');
+      banner.className = 'reorder-banner';
+      banner.innerHTML = '<span>⠿ &nbsp;Drag to reorder categories</span><button class="reorder-done-btn" onclick="exitReorderMode()">Done</button>';
+      container.appendChild(banner);
+    }
+
+    for (const cat of catOrder) {
+      const list = groups.get(cat);
+      if (!list || list.length === 0) continue;
       const groupEl = document.createElement('div');
       groupEl.className = 'group';
+      groupEl.dataset.cat = cat;
 
       const header = document.createElement('div');
       header.className = 'cat-header';
       const doneCount = list.filter(i => i.done).length;
       const isCollapsed = collapsedCats.has(cat);
-	header.innerHTML =
-	  `<span class="cat-icon">${catMeta.get(cat)}</span>` +
-	  `<span>${cat}</span>` +
-	  `<span class="cat-count">${doneCount}/${list.length}</span>` +
-	  `<span style="font-size:12px;margin-left:6px;transition:transform 0.2s;display:inline-block;transform:rotate(${isCollapsed ? '-90' : '0'}deg)">▾</span>`;
-	header.style.cursor = 'pointer';
-	header.onclick = () => {
-	  collapsedCats.has(cat) ? collapsedCats.delete(cat) : collapsedCats.add(cat);
-	  render();
-	};
+
+      if (reorderMode) {
+        header.innerHTML =
+          `<span class="drag-handle" touch-action="none">⠿</span>` +
+          `<span class="cat-icon">${catMeta.get(cat)}</span>` +
+          `<span>${cat}</span>` +
+          `<span class="cat-count">${doneCount}/${list.length}</span>`;
+        header.style.cursor = 'default';
+        // Attach drag to handle
+        const handle = header.querySelector('.drag-handle');
+        handle.addEventListener('touchstart', (e) => startGroupDrag(e, groupEl, cat), { passive: false });
+      } else {
+        header.innerHTML =
+          `<span class="cat-icon">${catMeta.get(cat)}</span>` +
+          `<span>${cat}</span>` +
+          `<span class="cat-count">${doneCount}/${list.length}</span>` +
+          `<span style="font-size:12px;margin-left:6px;transition:transform 0.2s;display:inline-block;transform:rotate(${isCollapsed ? '-90' : '0'}deg)">▾</span>`;
+        header.style.cursor = 'pointer';
+
+        // Long-press → reorder mode; short tap → collapse/expand
+        let catPressTimer = null, catLongPressed = false, catMoved = false;
+        header.addEventListener('touchstart', (e) => {
+          catLongPressed = false; catMoved = false;
+          header._catStartY = e.touches[0].clientY;
+          clearTimeout(catPressTimer);
+          catPressTimer = setTimeout(() => {
+            if (!catMoved) { catLongPressed = true; enterReorderMode(); }
+          }, 500);
+        }, { passive: true });
+        header.addEventListener('touchmove', (e) => {
+          if (Math.abs(e.touches[0].clientY - header._catStartY) > 8) {
+            catMoved = true; clearTimeout(catPressTimer);
+          }
+        }, { passive: true });
+        header.addEventListener('touchend', (e) => {
+          clearTimeout(catPressTimer);
+          if (!catLongPressed && !catMoved) {
+            e.preventDefault();
+            collapsedCats.has(cat) ? collapsedCats.delete(cat) : collapsedCats.add(cat);
+            render();
+          }
+          catLongPressed = false;
+        }, { passive: false });
+        // Desktop mouse users
+        header.onclick = () => {
+          collapsedCats.has(cat) ? collapsedCats.delete(cat) : collapsedCats.add(cat);
+          render();
+        };
+      }
+
       groupEl.appendChild(header);
 
       const ul = document.createElement('ul');
@@ -992,7 +1220,14 @@
         li.className = 'item' + (item.done ? ' done' : '');
 
         const check = document.createElement('div'); check.className = 'check';
-        const name = document.createElement('div'); name.className = 'name'; name.textContent = item.name;
+        const name = document.createElement('div'); name.className = 'name';
+        name.textContent = item.name;
+        if (item.note) {
+          const noteEl = document.createElement('span');
+          noteEl.className = 'note';
+          noteEl.textContent = item.note;
+          name.appendChild(noteEl);
+        }
         const qty = document.createElement('div'); qty.className = 'qty'; qty.textContent = formatQty(item.qty, item.unit);
         const del = document.createElement('button');
         del.className = 'delete'; del.innerHTML = '×';
