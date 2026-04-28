@@ -165,7 +165,7 @@
   }
   .add-manual input:focus { border-color: var(--ink-soft); background: var(--input-bg-focus); }
   .add-manual input.name-input { flex: 1; }
-  .add-manual input.qty-input { flex: 0 0 70px; text-align: center; }
+  .add-manual input.qty-input { flex: 0 0 90px; text-align: center; }
   .add-manual button { flex: 0 0 56px; font-size: 24px; padding: 8px 12px; line-height: 1; text-transform: none; letter-spacing: 0; }
 
   /* ── Category groups ── */
@@ -435,14 +435,14 @@
         </div>
       </div>
       <div class="paste-content">
-        <textarea id="input" placeholder="2 apples&#10;1 loaf of bread&#10;milk&#10;eggs x 12&#10;tomatoes - 4"></textarea>
+        <textarea id="input" placeholder="2 apples, eggs x 12&#10;500g flour&#10;chicken 1 kg&#10;milk 2L&#10;biscuit - 1 box"></textarea>
         <div class="actions">
           <button onclick="parseAndAdd()">add to list</button>
           <button class="secondary" onclick="clearAll()">clear all</button>
         </div>
         <div class="add-manual">
           <input type="text" id="manualName" class="name-input" placeholder="Quick add">
-          <input type="text" id="manualQty" class="qty-input" placeholder="Qty" inputmode="decimal">
+          <input type="text" id="manualQty" class="qty-input" placeholder="2 kg" inputmode="text">
           <button onclick="addManual()">+</button>
         </div>
       </div>
@@ -462,22 +462,19 @@
           <button class="info-close" onclick="toggleInfo()">×</button>
         </div>
         <div class="info-body">
-          <p class="info-intro">One item per line. Quantity is parsed automatically from these formats:</p>
-          <table class="info-table">
-            <tr><td><code>2 apples</code></td><td>number before name</td></tr>
-            <tr><td><code>apples x 2</code></td><td>× or x after name</td></tr>
-            <tr><td><code>2x apples</code></td><td>number + x prefix</td></tr>
-            <tr><td><code>apples (2)</code></td><td>number in brackets</td></tr>
-            <tr><td><code>apples - 2</code></td><td>dash or colon separator</td></tr>
-            <tr><td><code>apples 2</code></td><td>number at end</td></tr>
-            <tr><td><code>apples</code></td><td>no number → qty 1</td></tr>
-          </table>
-          <p class="info-section">Delimiters</p>
-          <p>Items can be separated by a <strong>new line</strong> or a <strong>comma</strong>.</p>
-          <p class="info-section">Auto-merge</p>
-          <p>Adding an item that already exists (e.g. <code>apple</code> when <code>Apple</code> is in the list) bumps its quantity instead of creating a duplicate. Plurals are normalized: <code>apples</code> merges with <code>apple</code>.</p>
-          <p class="info-section">Prefixes stripped</p>
-          <p>Leading bullets, dashes, and numbered list prefixes like <code>1.</code> or <code>1)</code> are removed automatically.</p>
+          <p class="info-intro"><span style="color:#87C35A;font-weight:700">Grocery</span> <strong>Run</strong> helps you build a shopping list fast. Paste a list, type items one by one, or do both. Everything gets sorted into categories automatically.</p>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:-4px">Items can be entered in English or Banglish (Bangla written in English letters).</p>
+          <p class="info-section">Adding Items</p>
+          <p>Paste a list of groceries (one per line or comma-separated) and tap <strong>Add to List</strong>. Or use the quick-add bar to type items one at a time.</p>
+          <p>Quantities are picked up automatically: <code>2 apples</code>, <code>apples x2</code>, <code>apples (2)</code> all work. Duplicates are merged, not doubled.</p>
+          <p class="info-section">Units</p>
+          <p>Add a unit right after the quantity: <code>500g flour</code>, <code>2 kg chicken</code>, <code>milk 1L</code>, <code>biscuit 1 box</code>. Supported units: <code>g</code> · <code>kg</code> · <code>L</code> · <code>ml</code> · <code>dozen</code> · <code>box</code>. In the quick-add bar, type the unit in the qty field, e.g. <code>2 kg</code>.</p>
+          <p class="info-section">Checking Off</p>
+          <p>Tap any item to mark it picked. Checked items sink to the bottom of their category. Tap again to uncheck.</p>
+          <p class="info-section">Editing and Deleting</p>
+          <p><strong>Long-press</strong> an item to edit its name, quantity, or unit. <strong>Swipe left</strong> to delete, or tap the <strong>×</strong> button.</p>
+          <p class="info-section">Sharing</p>
+          <p>Once you have checked some items off, tap <strong>Share what's bought</strong> to send the list or copy it to your clipboard.</p>
         </div>
       </div>
     </div>
@@ -488,14 +485,20 @@
 		  <span>Edit item</span>
 		  <button class="info-close" onclick="closeEdit()">×</button>
 		</div>
-		<div class="info-body" style="display:flex;flex-direction:column;gap:12px;padding-top:20px">
+		<div class="info-body" style="display:flex;flex-direction:column;gap:12px;padding-top:20px;padding-bottom:8px">
 		  <input type="text" id="editName" class="name-input"
 				 style="border:1px solid var(--rule);border-radius:8px;background:var(--input-bg);
-						font-family:var(--font);font-size:17px;color:var(--ink);padding:13px 14px;outline:none;width:100%">
-		  <input type="text" id="editQty" inputmode="decimal"
-				 style="border:1px solid var(--rule);border-radius:8px;background:var(--input-bg);
-						font-family:var(--font);font-size:17px;color:var(--ink);padding:13px 14px;outline:none;width:100%"
-				 placeholder="Quantity (e.g. 2)">
+						font-family:var(--font);font-size:17px;color:var(--ink);padding:13px 14px;outline:none;width:100%;box-sizing:border-box">
+		  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+		    <input type="text" id="editQty" inputmode="decimal"
+				   style="border:1px solid var(--rule);border-radius:8px;background:var(--input-bg);
+						  font-family:var(--font);font-size:17px;color:var(--ink);padding:13px 14px;outline:none;width:100%;box-sizing:border-box;min-width:0"
+				   placeholder="Qty (e.g. 2)">
+		    <input type="text" id="editUnit"
+				   style="border:1px solid var(--rule);border-radius:8px;background:var(--input-bg);
+						  font-family:var(--font);font-size:17px;color:var(--ink);padding:13px 14px;outline:none;width:100%;box-sizing:border-box;min-width:0"
+				   placeholder="Unit (kg, g, L…)">
+		  </div>
 		  <button onclick="saveEdit()" style="margin-top:4px">save</button>
 		</div>
 	  </div>
@@ -545,7 +548,7 @@
       'dried fruit', 'trail mix', 'energy bar', 'protein bar'
     ]],
     ['Household and Toiletries', '🧴', [
-      'soap', 'shampoo', 'toothpaste', 'toothbrush', 'detergent', 'body wash',
+      'soap', 'shampoo', 'toothpaste', 'toothbrush', 'detergent', 'body wash', 'bodywash',
       'surf', 'tissue', 'paper towel', 'toilet paper', 'cleaner',
       'bleach', 'sponge', 'foil', 'plastic bag', 'trash bag',
       'garbage bag', 'battery', 'bulb', 'match', 'candle',
@@ -554,7 +557,7 @@
 	  'hand wash', 'sanitizer', 'sanitary pad', 'napkin', 'cotton',
 	  'bandage', 'plaster', 'floor cleaner', 'air freshener', 'perfume',
 	  'aftershave', 'jharu', 'broom', 'mop', 'wiper', 'glove',
-	  'insecticide', 'coil', 'veet'
+	  'insecticide', 'coil', 'veet', 'handwash', 'hand wash', 'shower', 'wash'
     ]],
     ['Spices', '🧂', [
       'spice', 'masala', 'turmeric',
@@ -610,8 +613,9 @@
 	  'frozen fries', 'french fries', 'nugget','frozen vegetable', 'frozen pea'
     ]],
     ['Drinks', '🥤', [
-      'water', 'juice', 'coke', 'pepsi', 'sprite', 'fanta',
-      '7up', 'mountain dew', 'tang', 'mojo', 'frutika',
+      'apple juice', 'orange juice', 'mango juice', 'fruit juice', 'mixed juice',
+	  'water', 'juice', 'coke', 'pepsi', 'sprite', 'fanta',
+      '7up', '7Up', 'mountain dew', 'tang', 'mojo', 'frutika',
       'glucose', 'rooh afza'
     ]]
 	
@@ -697,6 +701,26 @@
   }
 
   // ───────────────────────────────────────────────────────────────
+  //  Unit handling
+  // ───────────────────────────────────────────────────────────────
+  const NUM = '\\d+(?:[.,]\\d+)?';
+  const UNIT_ADJ  = '(?:kg|ml|mL|ML|[gGlL])';
+  const UNIT_WORD = '(?:dozen|box(?:es)?|kilograms?|grams?|liters?|litres?|milliliters?|millilitres?)';
+  const UNIT_ALL  = `(?:${UNIT_WORD}|${UNIT_ADJ})`;
+
+  function normalizeUnit(u) {
+    if (!u) return null;
+    const l = u.toLowerCase();
+    if (l === 'kg' || /^kilograms?$/.test(l)) return 'kg';
+    if (l === 'g'  || /^grams?$/.test(l))     return 'g';
+    if (l === 'l'  || /^li(ter|tre)s?$/.test(l)) return 'L';
+    if (/^m[lL]$/.test(l) || /^milli(liter|litre)s?$/.test(l)) return 'ml';
+    if (l === 'dozen') return 'dozen';
+    if (l === 'box' || l === 'boxes') return 'box';
+    return null;
+  }
+
+  // ───────────────────────────────────────────────────────────────
   //  Parsing
   // ───────────────────────────────────────────────────────────────
   function parseLine(raw) {
@@ -706,19 +730,55 @@
     line = line.replace(/^\d+[\.\)]\s+/, '');
     if (!line) return null;
 
-    const num = '\\d+(?:[\\.,]\\d+)?';
     let m;
-    m = line.match(new RegExp('^(' + num + ')\\s*[x×]?\\s+(.+)$', 'i'));
-    if (m && m[2].trim()) return { name: m[2].trim(), qty: toNum(m[1]) };
-    m = line.match(new RegExp('^(.+?)\\s+[x×]\\s*(' + num + ')\\s*$', 'i'));
-    if (m) return { name: m[1].trim(), qty: toNum(m[2]) };
-    m = line.match(new RegExp('^(.+?)\\s*\\((' + num + ')\\)\\s*$'));
-    if (m) return { name: m[1].trim(), qty: toNum(m[2]) };
-    m = line.match(new RegExp('^(.+?)\\s*[\\-–—:]\\s*(' + num + ')\\s*$'));
-    if (m) return { name: m[1].trim(), qty: toNum(m[2]) };
-    m = line.match(new RegExp('^(.+?)\\s+(' + num + ')\\s*$'));
-    if (m) return { name: m[1].trim(), qty: toNum(m[2]) };
-    return { name: line, qty: 1 };
+
+    // ── Number-first ──
+    // `500g rice` / `2kg rice`
+    m = line.match(new RegExp(`^(${NUM})(${UNIT_ADJ})\\s+(.+)$`, 'i'));
+    if (m && m[3].trim()) return { name: m[3].trim(), qty: toNum(m[1]), unit: normalizeUnit(m[2]) };
+
+    // `2 kg rice` / `500 grams rice`
+    m = line.match(new RegExp(`^(${NUM})\\s+(${UNIT_ALL})\\s+(.+)$`, 'i'));
+    if (m && m[3].trim()) return { name: m[3].trim(), qty: toNum(m[1]), unit: normalizeUnit(m[2]) };
+
+    // `2 x apples` / `2x apples` / `2 apples`
+    m = line.match(new RegExp(`^(${NUM})\\s*[x×]?\\s+(.+)$`, 'i'));
+    if (m && m[2].trim()) return { name: m[2].trim(), qty: toNum(m[1]), unit: null };
+
+    // ── Name-first ──
+    // `rice x 500g`
+    m = line.match(new RegExp(`^(.+?)\\s+[x×]\\s*(${NUM})(${UNIT_ADJ})\\s*$`, 'i'));
+    if (m) return { name: m[1].trim(), qty: toNum(m[2]), unit: normalizeUnit(m[3]) };
+
+    // `rice x 2 kg` / `rice x 2`
+    m = line.match(new RegExp(`^(.+?)\\s+[x×]\\s*(${NUM})(?:\\s+(${UNIT_ALL}))?\\s*$`, 'i'));
+    if (m) return { name: m[1].trim(), qty: toNum(m[2]), unit: normalizeUnit(m[3] || null) };
+
+    // `rice (500g)`
+    m = line.match(new RegExp(`^(.+?)\\s*\\((${NUM})(${UNIT_ADJ})\\)\\s*$`, 'i'));
+    if (m) return { name: m[1].trim(), qty: toNum(m[2]), unit: normalizeUnit(m[3]) };
+
+    // `rice (2 kg)` / `rice (2)`
+    m = line.match(new RegExp(`^(.+?)\\s*\\((${NUM})(?:\\s+(${UNIT_ALL}))?\\)\\s*$`, 'i'));
+    if (m) return { name: m[1].trim(), qty: toNum(m[2]), unit: normalizeUnit(m[3] || null) };
+
+    // `rice - 500g`
+    m = line.match(new RegExp(`^(.+?)\\s*[\\-–—:]\\s*(${NUM})(${UNIT_ADJ})\\s*$`, 'i'));
+    if (m) return { name: m[1].trim(), qty: toNum(m[2]), unit: normalizeUnit(m[3]) };
+
+    // `rice - 2 kg` / `rice - 2`
+    m = line.match(new RegExp(`^(.+?)\\s*[\\-–—:]\\s*(${NUM})(?:\\s+(${UNIT_ALL}))?\\s*$`, 'i'));
+    if (m) return { name: m[1].trim(), qty: toNum(m[2]), unit: normalizeUnit(m[3] || null) };
+
+    // `flour 500g`
+    m = line.match(new RegExp(`^(.+?)\\s+(${NUM})(${UNIT_ADJ})\\s*$`, 'i'));
+    if (m) return { name: m[1].trim(), qty: toNum(m[2]), unit: normalizeUnit(m[3]) };
+
+    // `rice 2 kg` / `rice 2`
+    m = line.match(new RegExp(`^(.+?)\\s+(${NUM})(?:\\s+(${UNIT_ALL}))?\\s*$`, 'i'));
+    if (m) return { name: m[1].trim(), qty: toNum(m[2]), unit: normalizeUnit(m[3] || null) };
+
+    return { name: line, qty: 1, unit: null };
   }
   function toNum(s) { return parseFloat(String(s).replace(',', '.')); }
 
@@ -749,17 +809,17 @@
   // If an item with the same singular root already exists,
   // bump its quantity and un-check it. Otherwise add as a new entry.
   // The stored name is always the singular form so the list stays tidy.
-  function addOrMerge(name, qty) {
+  function addOrMerge(name, qty, unit) {
     const root = singularize(name);
-    const existing = items.find(i => singularize(i.name) === root);
+    const normUnit = normalizeUnit(unit) || null;
+    const existing = items.find(i => singularize(i.name) === root && (i.unit || null) === normUnit);
     if (existing) {
       existing.qty = (existing.qty || 1) + (qty || 1);
       existing.done = false;
       return false;
     }
-    // Capitalize the first letter nicely, store as singular
     const stored = root.charAt(0).toUpperCase() + root.slice(1);
-    items.push({ id: Date.now() + Math.random(), name: stored, qty, done: false });
+    items.push({ id: Date.now() + Math.random(), name: stored, qty, unit: normUnit, done: false });
     return true;
   }
 
@@ -775,7 +835,7 @@
     for (const seg of segments) {
       const p = parseLine(seg);
       if (p && p.name) {
-        addOrMerge(p.name, p.qty);
+        addOrMerge(p.name, p.qty, p.unit);
         touched++;
       }
     }
@@ -792,8 +852,14 @@
     const qtyEl = document.getElementById('manualQty');
     const name = nameEl.value.trim();
     if (!name) return;
-    const qty = parseFloat(qtyEl.value.replace(',', '.')) || 1;
-    addOrMerge(name, qty);
+    const qtyRaw = qtyEl.value.trim();
+    let qty = 1, unit = null;
+    if (qtyRaw) {
+      const m = qtyRaw.match(new RegExp(`^(${NUM})\\s*(${UNIT_ALL})?\\s*$`, 'i'));
+      if (m) { qty = toNum(m[1]); unit = normalizeUnit(m[2] || null); }
+      else { qty = parseFloat(qtyRaw.replace(',', '.')) || 1; }
+    }
+    addOrMerge(name, qty, unit);
     nameEl.value = ''; qtyEl.value = '';
     save(); render();
     nameEl.focus();
@@ -825,10 +891,10 @@
     document.getElementById('pasteSection').classList.toggle('collapsed');
   }
 
-  function formatQty(q) {
-    if (q === 1) return '';
-    const display = Number.isInteger(q) ? q : q.toFixed(2).replace(/\.?0+$/, '');
-    return '×' + display;
+  function formatQty(q, unit) {
+    if (q === 1 && !unit) return '';
+    const display = Number.isInteger(q) ? q : parseFloat(q.toFixed(2));
+    return unit ? `${display}\u202f${unit}` : '×' + display;
   }
 	// ── Edit modal ──────────────────────────────────────────────────
 	let editingId = null;
@@ -839,6 +905,7 @@
 	  editingId = id;
 	  document.getElementById('editName').value = it.name;
 	  document.getElementById('editQty').value = it.qty === 1 ? '' : it.qty;
+	  document.getElementById('editUnit').value = it.unit || '';
 	  document.getElementById('editOverlay').classList.add('open');
 	  setTimeout(() => document.getElementById('editName').focus(), 80);
 	}
@@ -851,11 +918,13 @@
 	  if (!it) return closeEdit();
 	  const newName = document.getElementById('editName').value.trim();
 	  const newQty  = parseFloat(document.getElementById('editQty').value.replace(',','.')) || 1;
-	  if (newName) { it.name = newName; it.qty = newQty; }
+	  const newUnit = normalizeUnit(document.getElementById('editUnit').value.trim() || null);
+	  if (newName) { it.name = newName; it.qty = newQty; it.unit = newUnit; }
 	  save(); render(); closeEdit();
 	}
 	document.getElementById('editName').addEventListener('keydown', e => { if (e.key==='Enter') { document.getElementById('editQty').focus(); } });
-	document.getElementById('editQty').addEventListener('keydown',  e => { if (e.key==='Enter') saveEdit(); });
+	document.getElementById('editQty').addEventListener('keydown',  e => { if (e.key==='Enter') { document.getElementById('editUnit').focus(); } });
+	document.getElementById('editUnit').addEventListener('keydown', e => { if (e.key==='Enter') saveEdit(); });
   // ───────────────────────────────────────────────────────────────
   //  Render — grouped by category
   // ───────────────────────────────────────────────────────────────
@@ -924,7 +993,7 @@
 
         const check = document.createElement('div'); check.className = 'check';
         const name = document.createElement('div'); name.className = 'name'; name.textContent = item.name;
-        const qty = document.createElement('div'); qty.className = 'qty'; qty.textContent = formatQty(item.qty);
+        const qty = document.createElement('div'); qty.className = 'qty'; qty.textContent = formatQty(item.qty, item.unit);
         const del = document.createElement('button');
         del.className = 'delete'; del.innerHTML = '×';
         del.setAttribute('aria-label', 'remove');
@@ -1025,8 +1094,11 @@
     if (bought.length === 0) return;
 
     const lines = bought.map(i => {
-      const qty = (i.qty && i.qty !== 1) ? ` (${i.qty})` : '';
-      return `✓ ${i.name}${qty}`;
+      const q = i.qty || 1;
+      const qStr = q !== 1 || i.unit
+        ? ` (${Number.isInteger(q) ? q : parseFloat(q.toFixed(2))}${i.unit ? '\u202f' + i.unit : ''})`
+        : '';
+      return `✓ ${i.name}${qStr}`;
     });
     const text = lines.join('\n');
 
