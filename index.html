@@ -476,6 +476,7 @@
         <span>paste your list</span>
         <div style="display:flex;align-items:center;gap:10px">
           <button class="info-btn" onclick="event.stopPropagation();toggleInfo()" aria-label="Parsing rules">?</button>
+          <button class="info-btn" onclick="event.stopPropagation();toggleCategories()" aria-label="Customize categories">⚙</button>
           <span class="arrow">▾</span>
         </div>
       </div>
@@ -486,8 +487,8 @@
           <button class="secondary" onclick="clearAll()">clear all</button>
         </div>
         <div class="add-manual">
-          <input type="text" id="manualName" class="name-input" placeholder="Quick add" autocomplete="new-password">
-          <input type="text" id="manualQty" class="qty-input" placeholder="2 kg" inputmode="text" autocomplete="new-password">
+          <input type="text" id="manualName" class="name-input" placeholder="Quick add" autocomplete="off">
+          <input type="text" id="manualQty" class="qty-input" placeholder="2 kg" inputmode="text" autocomplete="off">
           <button onclick="addManual()">+</button>
         </div>
       </div>
@@ -523,6 +524,31 @@
         </div>
       </div>
     </div>
+    <!-- Categories modal -->
+    <div class="info-overlay" id="categoriesOverlay" onclick="toggleCategories()">
+      <div class="info-modal" onclick="event.stopPropagation()">
+        <div class="info-header">
+          <span>Categories</span>
+          <button class="info-close" onclick="toggleCategories()">×</button>
+        </div>
+        <div class="info-body">
+          <p class="info-intro">Items are sorted using a keyword dictionary. You can replace the built-in one with your own — useful for other languages, regions, or category names.</p>
+          <p class="info-section">Status</p>
+          <p id="categoriesStatus">Using built-in categories.</p>
+          <p class="info-section">Upload your own</p>
+          <p>Upload a JSON file shaped like <code>[["Produce","🥕",["apple","onion"]], ["Dairy","🥛",["milk","cheese"]]]</code> — each entry is <code>[category name, icon, keywords]</code>. The first keyword match wins, so put more specific categories first.</p>
+          <p>Not sure where to start? Download the current dictionary as a template, edit it, then upload it back.</p>
+          <input type="file" id="categoriesFile" accept="application/json,.json" onchange="handleCategoriesUpload(event)" style="display:none">
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button type="button" class="secondary" style="flex:none;width:auto;padding:9px 14px;font-size:12px" onclick="document.getElementById('categoriesFile').click()">choose file</button>
+            <button class="secondary" style="flex:none;width:auto;padding:9px 14px;font-size:12px" onclick="downloadCategoriesTemplate()">download template</button>
+            <button class="secondary" style="flex:none;width:auto;padding:9px 14px;font-size:12px" onclick="resetCategories()">reset to default</button>
+          </div>
+          <div id="categoriesFileName" style="font-size:12px;color:var(--ink-faded);margin-top:6px"></div>
+          <p id="categoriesError" style="color:var(--accent);display:none;font-size:14px"></p>
+        </div>
+      </div>
+    </div>
 	<!-- Edit modal -->
 	<div class="info-overlay" id="editOverlay" onclick="closeEdit()">
 	  <div class="info-modal" onclick="event.stopPropagation()" style="padding-bottom:32px">
@@ -554,144 +580,11 @@
 	</div>
   </div>
 
+<script src="categories.js"></script>
 <script>
-  // ───────────────────────────────────────────────────────────────
-  //  Category dictionary
-  //  Order matters: first match wins.
-  // ───────────────────────────────────────────────────────────────
-  const CATEGORIES = [
-
-    ['Pantry', '🥫', [
-      'rice', 'chal', 'chaal', 'polao chal', 'flour', 'cornflour','atta', 'maida', 'suji', 'semolina', 'sugar',
-      'salt', 'oil', 'vinegar', 'soy sauce', 'ketchup', 'semai', 'lachcha', 'shemai',
-      'mustard', 'jam', 'honey', 'peanut butter', 'pasta', 'noodle',
-      'spaghetti', 'macaroni', 'lentil', 'dal', 'daal',
-      'chickpea', 'chola', 'tea', 'coffee', 'chana daal',
-      'cornstarch', 'corn starch', 'soup', 'broth',
-      'sauce', 'tomato paste', 'canned', 'tinned', 'pickle', 'achar', 'cereal',
-      'oat', 'oatmeal', 'granola', 'tin', 'can', 'custard', 'seed', 'besan', 
-	  'muri', 'chira', 'chiura', 'khoi', 'gur', 'molasses', 'jaggery', 'mishri',
-		'lobon', 'chini', 'tel', 'payesh',
-		'condensed milk', 'powdered milk', 'milk powder', 'vermicelli',
-		'rava', 'dalda', 'vanaspati', 'tapioca', 'sabudana', 'arrowroot', 'sagoo', 'haleem'
-    ]],
-    ['Dairy & Eggs', '🥛', [
-      'milk', 'cheese', 'butter', 'yogurt', 'tok doi',
-      'cream', 'ghee', 'paneer', 'chana', 'egg'
-    ]],
-    ['Meat & Fish', '🐟', [
-      'chicken', 'beef', 'mutton', 'khasi', 'lamb',
-      'fish', 'mach', 'shrimp', 'prawn',
-      'salmon', 'tuna', 'ilish', 'hilsa', 'rui', 'katla', 'tilapia', 'pomfret',
-      'rupchanda', 'pangash', 'pangas', 'koi', 'magur', 'shing', 'goat', 'duck',
-	  'liver', 'mince', 'keema',
-	  'chingri', 'galda', 'baim', 'pabda', 'tengra', 'boal', 'shoal', 'bhetki',
-	  'air mach'
-    ]],
-    ['Snacks', '🍪', [
-      'biscuit', 'cookie', 'cracker', 'chip',
-      'chocolate', 'candy', 'sweet', 'mishti', 'chanachur',
-      'jhalmuri', 'popcorn', 'nut', 'almond', 'cashew',
-      'peanut', 'pistachio', 'walnut', 'raisin', 'naru',
-	  'murali', 'moa', 'laddu', 'pitha', 'wafer',
-      'dried fruit', 'trail mix', 'energy bar', 'protein bar'
-    ]],
-    ['Personal Care & Toiletries', '🧴', [
-	  'soap', 'shampoo', 'toothpaste', 'toothbrush', 'body wash', 'bodywash',
-	  'razor', 'deodorant', 'lotion', 'comb', 'brush', 'odomos',
-	  'liquid soap', 'hand wash', 'handwash', 'sanitizer', 'sanitary pad',
-	  'napkin', 'cotton', 'bandage', 'perfume', 'aftershave',
-	  'veet', 'shower', 'wash'
-	]],
-	['Household & Cleaning', '🧹', [
-	  'detergent', 'surf', 'tissue', 'paper towel', 'toilet paper', 'cleaner',
-	  'bleach', 'sponge', 'foil', 'plastic bag', 'trash bag', 'garbage bag','Rin powder',
-	  'battery', 'bulb', 'match', 'candle', 'mosquito', 'harpic',
-	  'vim', 'vim bar', 'lizol', 'floor cleaner', 'air freshener',
-	  'jharu', 'broom', 'mop', 'wiper', 'glove', 'insecticide', 'coil'
-	]],
-	['Baby & Kids', '🍼', [
-	  'diaper', 'nappy', 'pampers',
-	  'baby wipes', 'wet wipes',
-	  'baby food', 'baby cereal', 'cerelac', 'formula',
-	  'milk formula', 'infant formula', 'baby milk',
-	  'feeding bottle', 'baby bottle', 'bottle nipple',
-	  'pacifier', 'soother', 'teether',
-	  'baby lotion', 'baby cream', 'baby oil',
-	  'baby shampoo', 'baby soap', 'baby powder',
-	  'rash cream', 'diaper rash cream',
-	  'bib', 'burp cloth', 'baby towel',
-	  'baby toothbrush', 'baby toothpaste',
-	  'kids toothpaste', 'kids shampoo',
-	  'kids soap', 'kids snacks', 'kids drink',
-	  'suji for baby', 'huggies',
-	  'nestle nan', 'lactogen', 'dexolac',
-	  'baby diaper', 'training pants'
-	]],
-	
-    ['Spices', '🧂', [
-      'spice', 'masala', 'turmeric',
-      'cumin', 'jeera', 'coriander', 'dhonia', 'cardamom',
-      'elach', 'cinnamon', 'daruchini', 'clove', 'lobongo', 'paprika',
-      'bay leaf', 'tej pata', 'saffron', 'jafran', 'panch foron', 'oregano', 'chilli powder',
-      'herb', 'pepper', 'biryani masala', 'ready mix', 'methi', 'fenugreek', 'ajwain',
-	  'shukna morich', 'dried chilli', 'black pepper', 'gol morich',
-      'white pepper', 'mace', 'star anise', 'fennel', 'mouri', 'asafoetida', 'hing',
-	  'tamarind powder', 'chat masala', 'jira'
-    ]],
-	['Baking', '🧁', [
-	  'baking powder', 'baking soda', 'yeast', 'vanilla essence',
-	  'food color', 'food colour', 'icing sugar', 'icing', 'fondant',
-	  'chocolate chip', 'sprinkle', 'cocoa powder', 
-	  'whipped cream', 'cream cheese', 'cocoa'
-	]],
-    ['Bakery', '🥖', [
-      'bread', 'loaf', 'bun', 'roll', 'bagel', 'croissant', 'cake', 'pastry',
-      'muffin', 'donut', 'tortilla', 'naan', 'paratha', 'butter bun',
-      'ruti', 'toast'
-    ]],
-    ['Fruit', '🍎', [
-      'apple', 'banana', 'orange', 'grape', 'strawberry',
-      'blueberry', 'raspberry', 'mango', 'pineapple',
-      'watermelon', 'melon', 'papaya', 'kiwi', 'peach', 'pear',
-      'plum', 'cherry', 'avocado', 'sofeda',
-      'pomegranate', 'guava', 'peyara', 'lichi', 'lychee', 'jackfruit',
-      'date', 'fig', 'apricot', 'tangerine', 'mosambi',
-      'gooseberry', 'mandarin', 'malta', 
-	  'bel', 'tetul', 'tamarind', 'jambura', 'pomelo', 'starfruit',
-	  'dragon fruit', 'passion fruit', 'coconut', 'narikel', 'dab'
-    ]],
-    ['Vegetable', '🥕', [
-      'tomato', 'potato', 'onion', 'ada',
-      'garlic', 'roshun', 'ginger', 'carrot', 'cabbage',
-      'cauliflower', 'broccoli', 'spinach', 'lettuce',
-      'cucumber', 'capsicum', 'eggplant', 'brinjal',
-      'chili', 'chilli', 'lady finger', 'okra', 'pumpkin',
-      'gourd', 'lau', 'kakrol', 'patal', 'shim', 'bean',
-      'pea', 'corn', 'mushroom', 'celery', 'radish', 'beet', 'beetroot',
-      'kale', 'asparagus', 'zucchini', 'shak', 'puishak', 'data', 'kachu',
-      'sweet potato', 'mishti aloo', 'cilantro', 'lemon', 'lime',
-	  'dhundul', 'jhinga', 'chichinga', 'korola', 'bitter gourd',
-      'kacha morich', 'dhonia pata', 'palong shak', 'lal shak',
-      'kochu shak', 'fulkopi', 'badhakopi', 'misti kumra', 'pepe',
-      'shosha', 'lebu', 'sheem', 'sim', 'barbati', 'borboti', 'yard long bean',
-      'taro', 'yam', 'raw banana', 'kachkola', 'kacha kola'
-	  
-    ]],
-    ['Frozen', '❄', [
-      'ice cream', 'frozen', 'kulfi', 'frozen fish', 'frozen paratha', 'frozen ruti',
-	  'frozen fries', 'french fries', 'nugget','frozen vegetable', 'frozen pea'
-    ]],
-    ['Drinks', '🥤', [
-      'apple juice', 'orange juice', 'mango juice', 'fruit juice', 'mixed juice',
-	  'water', 'juice', 'coke', 'pepsi', 'sprite', 'fanta',
-      '7up', '7Up', 'mountain dew', 'tang', 'mojo', 'frutika',
-      'glucose', 'rooh afza'
-    ]]
-
-	
-  ];
-  const OTHER_ICON = '📦';
+  // Active category dictionary — starts out as the built-in set, but can be
+  // swapped for a user-uploaded one (see "Customize categories" below).
+  let CATEGORIES = DEFAULT_CATEGORIES;
 
   // Flat set of every keyword across all categories. Used by
   // singularize() to disambiguate plurals like "cookies" (which
@@ -699,8 +592,47 @@
   // already-singular words ending in s ("asparagus", "molasses")
   // untouched.
   const KEYWORD_SET = new Set();
-  for (const [, , kws] of CATEGORIES) {
-    for (const kw of kws) KEYWORD_SET.add(kw.toLowerCase());
+  function rebuildKeywordSet() {
+    KEYWORD_SET.clear();
+    for (const [, , kws] of CATEGORIES) {
+      for (const kw of kws) KEYWORD_SET.add(kw.toLowerCase());
+    }
+  }
+  rebuildKeywordSet();
+
+  // ───────────────────────────────────────────────────────────────
+  //  Custom categories — lets a user replace the built-in dictionary
+  //  with their own, e.g. for a different language or region.
+  //  Expected shape: [["Category Name", "🥕", ["keyword1", "keyword2"]], ...]
+  // ───────────────────────────────────────────────────────────────
+  const CUSTOM_CATEGORIES_KEY = 'grocery-custom-categories-v1';
+
+  function validateCategories(data) {
+    if (!Array.isArray(data) || data.length === 0) return 'Must be a non-empty array of categories.';
+    for (const entry of data) {
+      if (!Array.isArray(entry) || entry.length !== 3) return 'Each category must be [name, icon, keywords].';
+      const [name, icon, kws] = entry;
+      if (typeof name !== 'string' || !name.trim()) return 'Every category needs a non-empty name.';
+      if (typeof icon !== 'string' || !icon.trim()) return 'Every category needs a non-empty icon.';
+      if (!Array.isArray(kws) || !kws.every(k => typeof k === 'string')) return 'Keywords must be an array of strings.';
+    }
+    return null;
+  }
+
+  function applyCategories(cats) {
+    CATEGORIES = cats;
+    rebuildKeywordSet();
+  }
+
+  function loadCustomCategories() {
+    try {
+      const raw = localStorage.getItem(CUSTOM_CATEGORIES_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (!validateCategories(data)) { applyCategories(data); return; }
+      }
+    } catch (e) {}
+    applyCategories(DEFAULT_CATEGORIES);
   }
 
   // Escape regex metacharacters in a literal string
@@ -774,6 +706,7 @@
     .toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 
   function load() {
+    loadCustomCategories();
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) items = JSON.parse(raw) || [];
@@ -1377,6 +1310,72 @@
 
   function toggleInfo() {
     document.getElementById('infoOverlay').classList.toggle('open');
+  }
+
+  // ───────────────────────────────────────────────────────────────
+  //  Categories modal
+  // ───────────────────────────────────────────────────────────────
+  function toggleCategories() {
+    document.getElementById('categoriesOverlay').classList.toggle('open');
+    refreshCategoriesStatus();
+    showCategoriesError(null);
+    document.getElementById('categoriesFileName').textContent = '';
+  }
+  function refreshCategoriesStatus() {
+    const isCustom = !!localStorage.getItem(CUSTOM_CATEGORIES_KEY);
+    document.getElementById('categoriesStatus').textContent = isCustom
+      ? `Using your custom categories (${CATEGORIES.length} categories).`
+      : `Using built-in categories (${CATEGORIES.length} categories).`;
+  }
+  function showCategoriesError(msg) {
+    const el = document.getElementById('categoriesError');
+    el.textContent = msg || '';
+    el.style.display = msg ? 'block' : 'none';
+  }
+  function handleCategoriesUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    document.getElementById('categoriesFileName').textContent = file.name;
+    event.target.value = '';
+    const reader = new FileReader();
+    reader.onload = () => {
+      let data;
+      try { data = JSON.parse(reader.result); }
+      catch (e) { showCategoriesError('That file is not valid JSON.'); return; }
+      const err = validateCategories(data);
+      if (err) { showCategoriesError(err); return; }
+      try { localStorage.setItem(CUSTOM_CATEGORIES_KEY, JSON.stringify(data)); }
+      catch (e) { showCategoriesError('Could not save — storage may be full.'); return; }
+      applyCategories(data);
+      loadCatOrder();
+      render();
+      refreshCategoriesStatus();
+      showCategoriesError(null);
+    };
+    reader.onerror = () => showCategoriesError('Could not read that file.');
+    reader.readAsText(file);
+  }
+  function resetCategories() {
+    localStorage.removeItem(CUSTOM_CATEGORIES_KEY);
+    applyCategories(DEFAULT_CATEGORIES);
+    loadCatOrder();
+    render();
+    refreshCategoriesStatus();
+    showCategoriesError(null);
+    document.getElementById('categoriesFileName').textContent = '';
+  }
+  function downloadCategoriesTemplate() {
+    const blob = new Blob([JSON.stringify(CATEGORIES, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'grocery-categories.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    // Revoking right away can cancel the download before the browser reads
+    // the blob, since a.click() kicks off the download asynchronously.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   load();

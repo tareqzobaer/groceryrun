@@ -1,6 +1,6 @@
 // Bump this version whenever you change index.html or the manifest
 // to force browsers to fetch the new files.
-const CACHE = 'groceryrun-v4';
+const CACHE = 'groceryrun-v9';
 
 // Files to cache up front. './' covers the root URL; 'index.html' covers
 // direct loads of the page. The Google Fonts URLs are listed so the app
@@ -8,6 +8,7 @@ const CACHE = 'groceryrun-v4';
 const SHELL = [
   './',
   './index.html',
+  './categories.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
